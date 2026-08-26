@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-CloudDisk 浏览器客户端插件按活动运行时实际声明的 slot 选择界面，不依赖 Desktop 或 DSH 版本号。当运行时同时提供 `sidebar.primary.action` 与 `main.page` 时，它注册一级侧边栏操作和带 key 的主页面；旧运行时则注册 `sidebar.footer.action` 入口，并通过 `shell.overlay` 打开同一个全屏 CloudDisk 工作台。工作台通过 Host CloudDisk RPC 完成连接设置、凭据替换与删除、用户查询、浏览、搜索、刷新和基于 cursor 的加载。它永远不读取凭据值；只有用户保存时，Host 凭据 API 才接收这些值。
+CloudDisk 浏览器客户端插件按活动运行时实际声明的 slot 选择界面，不依赖 Desktop 或 DSH 版本号。当运行时同时提供 `sidebar.primary.action` 与 `main.page` 时，它注册一级侧边栏操作和带 key 的主页面；旧运行时则注册 `sidebar.footer.action` 入口，并通过 `shell.overlay` 在现有侧边栏右侧打开同一个页面。工作台通过 Host CloudDisk RPC 完成连接设置、凭据替换与删除、用户查询、浏览、搜索、刷新和基于 cursor 的加载。它永远不读取凭据值；只有用户保存时，Host 凭据 API 才接收这些值。已连接工作台直接提供带确认的断开操作；连接表单只保存并验证凭据。
 
 该插件是确定性的浏览界面。它不贡献 Agent 工具，也不创建、安装、选择或修改 Agent Preset。CloudDisk Bundle 提供所需的 Host 服务和 Provider。
 

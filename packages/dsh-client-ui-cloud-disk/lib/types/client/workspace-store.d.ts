@@ -1,5 +1,5 @@
 import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client';
-/** Shared visibility state for the legacy full-screen CloudDisk workspace. */
+/** Shared visibility state for the legacy CloudDisk workspace. */
 export interface CloudDiskWorkspaceState {
     open: boolean;
 }

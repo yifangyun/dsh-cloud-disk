@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { Fragment, useEffect, useState } from 'react';
-import { Button, Input, IconChevronRightOutline14, IconFolderClose16, IconDataOutline16 } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, Input, Modal, IconChevronRightOutline14, IconFolderClose16, IconDataOutline16 } from '@deepseek-ai/dsh-client-ui-primitives';
 import { CloudDiskConnectionPanel } from "./CloudDiskConnectionPanel.js";
 import css from './CloudDiskPage.module.css';
 const API_KEY_REF = 'CLOUD_DISK_API_KEY';
@@ -20,7 +20,6 @@ export function CloudDiskPage({ api, t }) {
     const [signingSecret, setSigningSecret] = useState('');
     const [connecting, setConnecting] = useState(false);
     const [confirmDisconnect, setConfirmDisconnect] = useState(false);
-    const [editingCredentials, setEditingCredentials] = useState(false);
     const parentId = path.at(-1)?.id;
     const load = async (nextCursor = cursor, append = false) => {
         if (append && state.status === 'ready')
@@ -69,9 +68,8 @@ export function CloudDiskPage({ api, t }) {
         await load();
     };
     useEffect(() => { void initialize(); }, [parentId, submitted]);
-    const openSetup = async (returnToDisk) => {
+    const openSetup = async () => {
         setConfirmDisconnect(false);
-        setEditingCredentials(false);
         setState({ status: 'loading' });
         try {
             const response = await api.credentials.describe({ refs: [API_KEY_REF, SIGNING_SECRET_REF] });
@@ -86,7 +84,7 @@ export function CloudDiskPage({ api, t }) {
                 setState({ status: 'error', message: t('credentialsUnavailable') });
                 return;
             }
-            setState({ status: 'setup', credentials: { apiKey: apiKeyStatus, signingSecret: signingSecretStatus }, ...returnToDisk === undefined ? {} : { returnToDisk } });
+            setState({ status: 'setup', credentials: { apiKey: apiKeyStatus, signingSecret: signingSecretStatus } });
         }
         catch {
             setState({ status: 'error', message: t('credentialsUnavailable') });
@@ -147,7 +145,6 @@ export function CloudDiskPage({ api, t }) {
             }
             setUser(undefined);
             setConfirmDisconnect(false);
-            setEditingCredentials(false);
             await openSetup();
         }
         catch {
@@ -171,13 +168,6 @@ export function CloudDiskPage({ api, t }) {
         setPath(current => current.slice(0, -1));
         setCursor(undefined);
     };
-    const returnToDisk = () => {
-        if (state.status !== 'setup' || state.returnToDisk === undefined)
-            return;
-        setConfirmDisconnect(false);
-        setEditingCredentials(false);
-        setState({ status: 'ready', page: state.returnToDisk.page, loadingMore: state.returnToDisk.loadingMore });
-    };
     const unavailableMessage = state.status !== 'unavailable' ? undefined
         : state.errorCode === 'CLOUD_DISK_PROVIDER_CONFIGURED_MISSING' || state.errorCode === 'CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE' ? t('unavailableConfiguration')
             : state.errorCode === 'CLOUD_DISK_CREDENTIAL_MISSING' || state.errorCode === 'CLOUD_DISK_SIGNING_SECRET_MISSING' ? t('unavailableCredential')
@@ -187,7 +177,7 @@ export function CloudDiskPage({ api, t }) {
                             : state.errorCode === 'CLOUD_DISK_PROVIDER_FAILED' ? t('unavailableService')
                                 : t('unavailable');
     if (state.status === 'setup')
-        return _jsx("main", { className: css.connectionRoot, "aria-label": t('title'), children: _jsx(CloudDiskConnectionPanel, { t: t, apiKey: apiKey, signingSecret: signingSecret, apiKeyConfigured: state.credentials.apiKey.configured, signingSecretConfigured: state.credentials.signingSecret.configured, connecting: connecting, ...state.failure === undefined ? {} : { failure: state.failure }, confirmDisconnect: confirmDisconnect, canReturnToDisk: state.returnToDisk !== undefined, ...user === undefined ? {} : { user }, showCredentialFields: state.returnToDisk === undefined || editingCredentials, onApiKeyChange: setApiKey, onSigningSecretChange: setSigningSecret, onConnect: () => void connect(), onStartDisconnect: () => setConfirmDisconnect(true), onDisconnect: () => void disconnect(), onCancelDisconnect: () => setConfirmDisconnect(false), onReturnToDisk: returnToDisk, onShowCredentialFields: () => setEditingCredentials(true) }) });
-    return _jsxs("main", { className: css.root, "aria-label": t('title'), children: [_jsxs("header", { className: css.header, children: [_jsxs("div", { children: [user !== undefined && _jsxs("p", { className: css.eyebrow, children: [t('user'), ": ", user] }), _jsx("h1", { children: t('title') })] }), _jsxs("div", { className: css.headerActions, children: [state.status === 'ready' && _jsx(Button, { onClick: () => void openSetup({ page: state.page, loadingMore: state.loadingMore }), children: t('manageConnection') }), _jsx(Button, { onClick: () => void initialize(), children: t('refresh') })] })] }), state.status !== 'unavailable' && _jsxs("form", { className: css.search, onSubmit: submit, children: [_jsx(Input, { "aria-label": t('search'), value: query, onChange: event => setQuery(event.target.value), placeholder: t('search') }), _jsx(Button, { type: "submit", children: t('search') }), parentId !== undefined && submitted === '' && _jsx(Button, { type: "button", onClick: goBack, children: t('back') }), submitted !== '' && _jsx(Button, { type: "button", onClick: () => { setQuery(''); setSubmitted(''); resetToRoot(); }, children: t('clearSearch') })] }), submitted === '' && _jsxs("nav", { className: css.path, "aria-label": t('path'), children: [_jsx("button", { type: "button", onClick: resetToRoot, "aria-current": path.length === 0 ? 'page' : undefined, children: t('root') }), path.map((location, index) => _jsxs(Fragment, { children: [_jsx(IconChevronRightOutline14, { "aria-hidden": "true" }), _jsx("button", { type: "button", onClick: () => { setPath(path.slice(0, index + 1)); setCursor(undefined); }, "aria-current": index === path.length - 1 ? 'page' : undefined, children: location.name })] }, location.id))] }), state.status === 'loading' && _jsx("p", { role: "status", children: t('loading') }), state.status === 'unavailable' && _jsxs("section", { role: "status", children: [_jsx("p", { children: unavailableMessage }), _jsx(Button, { onClick: () => void initialize(), children: t('retry') })] }), state.status === 'error' && _jsxs("section", { role: "alert", children: [_jsx("p", { children: state.message || t('unavailable') }), _jsx(Button, { onClick: () => void load(cursor), children: t('retry') })] }), state.status === 'ready' && _jsxs(_Fragment, { children: [_jsx("ul", { className: css.list, "aria-label": submitted === '' ? t('root') : t('search'), children: state.page.nodes.map(node => _jsx("li", { children: _jsxs("button", { className: css.row, onClick: () => open(node), disabled: node.kind !== 'directory', children: [node.kind === 'directory' ? _jsx(IconFolderClose16, {}) : _jsx(IconDataOutline16, {}), _jsx("span", { children: displayNodeName(node.name) }), _jsx("small", { children: t(node.kind) })] }) }, node.id)) }), state.page.nodes.length === 0 && _jsx("p", { children: submitted === '' ? t('empty') : t('searchEmpty') }), state.page.nextCursor !== undefined && _jsx(Button, { disabled: state.loadingMore, onClick: () => void load(state.page.nextCursor, true), children: state.loadingMore ? t('loading') : t('next') })] })] });
+        return _jsx("main", { className: css.connectionRoot, "aria-label": t('title'), children: _jsx(CloudDiskConnectionPanel, { t: t, apiKey: apiKey, signingSecret: signingSecret, apiKeyConfigured: state.credentials.apiKey.configured, signingSecretConfigured: state.credentials.signingSecret.configured, connecting: connecting, ...state.failure === undefined ? {} : { failure: state.failure }, onApiKeyChange: setApiKey, onSigningSecretChange: setSigningSecret, onConnect: () => void connect() }) });
+    return _jsxs("main", { className: css.root, "aria-label": t('title'), children: [_jsxs("header", { className: css.header, children: [_jsxs("div", { children: [user !== undefined && _jsxs("p", { className: css.eyebrow, children: [t('user'), ": ", user] }), _jsx("h1", { children: t('title') })] }), _jsxs("div", { className: css.headerActions, children: [state.status === 'ready' && _jsx(Button, { disabled: connecting, onClick: () => setConfirmDisconnect(true), children: t('disconnect') }), _jsx(Button, { disabled: connecting, onClick: () => void initialize(), children: t('refresh') })] })] }), state.status !== 'unavailable' && _jsxs("form", { className: css.search, onSubmit: submit, children: [_jsx(Input, { "aria-label": t('search'), value: query, onChange: event => setQuery(event.target.value), placeholder: t('search') }), _jsx(Button, { type: "submit", children: t('search') }), parentId !== undefined && submitted === '' && _jsx(Button, { type: "button", onClick: goBack, children: t('back') }), submitted !== '' && _jsx(Button, { type: "button", onClick: () => { setQuery(''); setSubmitted(''); resetToRoot(); }, children: t('clearSearch') })] }), submitted === '' && _jsxs("nav", { className: css.path, "aria-label": t('path'), children: [_jsx("button", { type: "button", onClick: resetToRoot, "aria-current": path.length === 0 ? 'page' : undefined, children: t('root') }), path.map((location, index) => _jsxs(Fragment, { children: [_jsx(IconChevronRightOutline14, { "aria-hidden": "true" }), _jsx("button", { type: "button", onClick: () => { setPath(path.slice(0, index + 1)); setCursor(undefined); }, "aria-current": index === path.length - 1 ? 'page' : undefined, children: location.name })] }, location.id))] }), state.status === 'loading' && _jsx("p", { role: "status", children: t('loading') }), state.status === 'unavailable' && _jsxs("section", { role: "status", children: [_jsx("p", { children: unavailableMessage }), _jsx(Button, { onClick: () => void initialize(), children: t('retry') })] }), state.status === 'error' && _jsxs("section", { role: "alert", children: [_jsx("p", { children: state.message || t('unavailable') }), _jsx(Button, { onClick: () => void load(cursor), children: t('retry') })] }), state.status === 'ready' && _jsxs(_Fragment, { children: [_jsx("ul", { className: css.list, "aria-label": submitted === '' ? t('root') : t('search'), children: state.page.nodes.map(node => _jsx("li", { children: _jsxs("button", { className: css.row, onClick: () => open(node), disabled: node.kind !== 'directory', children: [node.kind === 'directory' ? _jsx(IconFolderClose16, {}) : _jsx(IconDataOutline16, {}), _jsx("span", { children: displayNodeName(node.name) }), _jsx("small", { children: t(node.kind) })] }) }, node.id)) }), state.page.nodes.length === 0 && _jsx("p", { children: submitted === '' ? t('empty') : t('searchEmpty') }), state.page.nextCursor !== undefined && _jsx(Button, { disabled: state.loadingMore, onClick: () => void load(state.page.nextCursor, true), children: state.loadingMore ? t('loading') : t('next') })] }), _jsx(Modal, { open: state.status === 'ready' && confirmDisconnect, onClose: () => setConfirmDisconnect(false), title: t('disconnectTitle'), closeLabel: t('cancel'), description: t('disconnectWarning'), footer: _jsxs(_Fragment, { children: [_jsx(Button, { disabled: connecting, onClick: () => setConfirmDisconnect(false), children: t('cancel') }), _jsx(Button, { disabled: connecting, onClick: () => void disconnect(), children: t('confirmDisconnect') })] }) })] });
 }
 //# sourceMappingURL=CloudDiskPage.js.map

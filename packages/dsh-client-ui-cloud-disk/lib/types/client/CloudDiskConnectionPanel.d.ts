@@ -7,18 +7,9 @@ interface CloudDiskConnectionPanelProps {
     readonly signingSecretConfigured: boolean;
     readonly connecting: boolean;
     readonly failure?: string;
-    readonly confirmDisconnect: boolean;
-    readonly canReturnToDisk: boolean;
-    readonly user?: string;
-    readonly showCredentialFields: boolean;
     readonly onApiKeyChange: (value: string) => void;
     readonly onSigningSecretChange: (value: string) => void;
     readonly onConnect: () => void;
-    readonly onStartDisconnect: () => void;
-    readonly onDisconnect: () => void;
-    readonly onCancelDisconnect: () => void;
-    readonly onReturnToDisk: () => void;
-    readonly onShowCredentialFields: () => void;
 }
 /**
  * Renders the standalone local-credential connection view.

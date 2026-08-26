@@ -2,11 +2,8 @@
 export declare const zh: {
     readonly nav: "云盘";
     readonly title: "360 AI 云盘";
-    readonly closeWorkspace: "关闭云盘";
     readonly search: "搜索文件和目录…";
     readonly refresh: "刷新";
-    readonly manageConnection: "管理连接";
-    readonly returnToDisk: "返回云盘";
     readonly next: "加载更多";
     readonly loading: "正在读取云盘…";
     readonly connecting: "正在验证…";
@@ -22,9 +19,6 @@ export declare const zh: {
     readonly credentialsUnavailable: "无法读取云盘凭据状态";
     readonly setupTitle: "连接 360 云盘";
     readonly setupDescription: "请输入您自己拥有的 API Key 和签名材料。它们仅保存在本机 Host 凭据存储中。";
-    readonly connectionStatus: "当前连接账号";
-    readonly connected: "连接正常";
-    readonly updateCredentials: "更新凭据";
     readonly apiKey: "API Key";
     readonly signingSecret: "签名材料";
     readonly apiKeyRequired: "请输入 API Key";
@@ -49,11 +43,8 @@ export declare const zh: {
 export declare const en: {
     readonly nav: "Cloud Disk";
     readonly title: "360 AI Cloud Disk";
-    readonly closeWorkspace: "Close cloud disk";
     readonly search: "Search files and folders…";
     readonly refresh: "Refresh";
-    readonly manageConnection: "Manage connection";
-    readonly returnToDisk: "Return to cloud disk";
     readonly next: "Load more";
     readonly loading: "Loading cloud disk…";
     readonly connecting: "Verifying…";
@@ -69,9 +60,6 @@ export declare const en: {
     readonly credentialsUnavailable: "Unable to read cloud disk credential status";
     readonly setupTitle: "Connect 360 Cloud Disk";
     readonly setupDescription: "Enter an API key and signing material that you own. They are stored only by the local Host credential provider.";
-    readonly connectionStatus: "Connected account";
-    readonly connected: "Connected";
-    readonly updateCredentials: "Update credentials";
     readonly apiKey: "API Key";
     readonly signingSecret: "Signing material";
     readonly apiKeyRequired: "Enter an API key";

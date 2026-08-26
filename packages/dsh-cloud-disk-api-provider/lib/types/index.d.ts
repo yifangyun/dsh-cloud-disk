@@ -86,6 +86,7 @@ export declare class DirectCloudDiskProvider implements CloudDiskProvider {
     search(request: CloudDiskSearchRequest, signal?: AbortSignal): Promise<CloudDiskPage>;
     private authenticate;
     private signed;
+    private signingSecret;
     private getInput;
     private postInput;
     private call;

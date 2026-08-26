@@ -173,8 +173,8 @@ function installCloudDiskRpc(ctx) {
 						ok: true,
 						value: pageView(page)
 					};
-				} catch {
-					return signal.aborted ? cancelled() : internalFailure("cloud disk listing failed");
+				} catch (error) {
+					return signal.aborted ? cancelled() : internalFailure(error instanceof CloudDiskError ? error.message : "cloud disk listing failed");
 				}
 			}
 			case "browse/search": {
@@ -268,6 +268,7 @@ var DirectCloudDiskProvider = class {
 	*/
 	async getUser(signal) {
 		const auth = await this.authenticate(signal);
+		await this.signingSecret();
 		const result = await this.call(this.getInput({
 			method: "User.getUserDetail",
 			access_token: auth.accessToken,
@@ -355,8 +356,7 @@ var DirectCloudDiskProvider = class {
 		};
 	}
 	async signed(auth, method, extra) {
-		const secret = await this.options.credentials.resolve(this.options.signingSecretRef);
-		if (secret === void 0) throw signingSecretMissing();
+		const secret = await this.signingSecret();
 		const input = {
 			access_token: auth.accessToken,
 			method,
@@ -368,6 +368,11 @@ var DirectCloudDiskProvider = class {
 			sign: sign(input, secret.value),
 			sub_channel: this.options.subChannel
 		};
+	}
+	async signingSecret() {
+		const secret = await this.options.credentials.resolve(this.options.signingSecretRef);
+		if (secret === void 0) throw signingSecretMissing();
+		return secret;
 	}
 	getInput(params, accessToken) {
 		return {
@@ -411,7 +416,7 @@ var DirectCloudDiskProvider = class {
 		}
 	}
 	data(result, subject) {
-		if (result.errno !== 0) throw failed(`CloudDisk ${subject} failed`);
+		if (result.errno !== 0) throw apiFailure(subject, result.errno);
 		return result.data;
 	}
 	page(value, path, parentId, page) {
@@ -485,6 +490,9 @@ function networkFailed() {
 }
 function failed(message) {
 	return new CloudDiskError(message, "CLOUD_DISK_PROVIDER_FAILED");
+}
+function apiFailure(subject, errno) {
+	return failed(`CloudDisk ${subject} failed with API errno ${typeof errno === "number" && Number.isSafeInteger(errno) ? String(errno) : typeof errno === "string" && /^-?\d{1,10}$/u.test(errno) ? errno : "unknown"}`);
 }
 function invalidResponse(subject) {
 	return failed(`CloudDisk ${subject} response is invalid`);

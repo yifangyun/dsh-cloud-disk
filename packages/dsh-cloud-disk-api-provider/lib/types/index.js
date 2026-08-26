@@ -66,6 +66,7 @@ export class DirectCloudDiskProvider {
      */
     async getUser(signal) {
         const auth = await this.authenticate(signal);
+        await this.signingSecret();
         const result = await this.call(this.getInput({
             method: 'User.getUserDetail', access_token: auth.accessToken, qid: auth.qid, sign: '', sub_channel: this.options.subChannel,
         }, auth.accessToken), signal);
@@ -126,11 +127,20 @@ export class DirectCloudDiskProvider {
         return { accessToken: data.access_token, qid: data.qid };
     }
     async signed(auth, method, extra) {
+        const secret = await this.signingSecret();
+        const input = {
+            access_token: auth.accessToken,
+            method,
+            qid: auth.qid,
+            ...extra,
+        };
+        return { ...input, sign: sign(input, secret.value), sub_channel: this.options.subChannel };
+    }
+    async signingSecret() {
         const secret = await this.options.credentials.resolve(this.options.signingSecretRef);
         if (secret === undefined)
             throw signingSecretMissing();
-        const input = { access_token: auth.accessToken, method, qid: auth.qid, ...extra };
-        return { ...input, sign: sign(input, secret.value), sub_channel: this.options.subChannel };
+        return secret;
     }
     getInput(params, accessToken) {
         return { method: 'GET', url: queryUrl(this.options.endpoint, params), headers: { 'access-token': accessToken } };
@@ -172,7 +182,7 @@ export class DirectCloudDiskProvider {
     }
     data(result, subject) {
         if (result.errno !== 0)
-            throw failed(`CloudDisk ${subject} failed`);
+            throw apiFailure(subject, result.errno);
         return result.data;
     }
     page(value, path, parentId, page) {
@@ -232,6 +242,14 @@ function signingSecretMissing() { return new CloudDiskError('CloudDisk signing s
 function authenticationFailed() { return new CloudDiskError('CloudDisk authentication failed', 'CLOUD_DISK_AUTHENTICATION_FAILED'); }
 function networkFailed() { return new CloudDiskError('CloudDisk network request failed', 'CLOUD_DISK_NETWORK_FAILED'); }
 function failed(message) { return new CloudDiskError(message, 'CLOUD_DISK_PROVIDER_FAILED'); }
+function apiFailure(subject, errno) {
+    const code = typeof errno === 'number' && Number.isSafeInteger(errno)
+        ? String(errno)
+        : typeof errno === 'string' && /^-?\d{1,10}$/u.test(errno)
+            ? errno
+            : 'unknown';
+    return failed(`CloudDisk ${subject} failed with API errno ${code}`);
+}
 function invalidResponse(subject) { return failed(`CloudDisk ${subject} response is invalid`); }
 function retryableStatus(status) { return status === 408 || status === 425 || status === 429 || status >= 500; }
 function queryUrl(endpoint, params) {

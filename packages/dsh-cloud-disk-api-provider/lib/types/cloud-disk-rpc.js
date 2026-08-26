@@ -138,8 +138,8 @@ export function installCloudDiskRpc(ctx) {
                         return cancelled();
                     return { ok: true, value: pageView(page) };
                 }
-                catch {
-                    return signal.aborted ? cancelled() : internalFailure('cloud disk listing failed');
+                catch (error) {
+                    return signal.aborted ? cancelled() : internalFailure(error instanceof CloudDiskError ? error.message : 'cloud disk listing failed');
                 }
             }
             case 'browse/search': {
