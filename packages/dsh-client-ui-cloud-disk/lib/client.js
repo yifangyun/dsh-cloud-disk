@@ -7,14 +7,91 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
+		let _deepseek_ai_dsh_client_runtime_client = require("@deepseek-ai/dsh-client-runtime/client");
+		//#region lib/types/client/cloud-disk-api.js
+		/** CloudDisk's stable private RPC client over the generic Connection channel. */
+		const CHANNEL = "/cloud-disk";
+		const API_KEY_REF$1 = "CLOUD_DISK_API_KEY";
+		const SIGNING_SECRET_REF$1 = "CLOUD_DISK_SIGNING_SECRET";
+		function response(result) {
+			return {
+				rpcId: "cloud-disk",
+				result
+			};
+		}
+		function credentialKind(ref) {
+			if (ref === API_KEY_REF$1) return "apiKey";
+			if (ref === SIGNING_SECRET_REF$1) return "signingSecret";
+		}
+		function badCredentialResponse(message) {
+			return {
+				rpcId: "cloud-disk",
+				result: {
+					ok: false,
+					error: {
+						code: "bad-request",
+						message,
+						details: { issues: [] }
+					}
+				}
+			};
+		}
+		/**
+		* Create the CloudDisk browser API from the plugin-private generic RPC channel.
+		* The returned credentials methods accept only the two CloudDisk references;
+		* they cannot be used to inspect or modify unrelated Host credentials.
+		* @param connection - active browser-to-Host connection.
+		* @returns The API subset consumed by the CloudDisk workspace.
+		*/
+		function createCloudDiskApi(connection) {
+			return {
+				cloudDisk: {
+					async describe(_payload, signal) {
+						return response(await connection.rpc.call(CHANNEL, "status", {}, signal));
+					},
+					async list(payload, signal) {
+						return response(await connection.rpc.call(CHANNEL, "browse/list", payload, signal));
+					},
+					async search(payload, signal) {
+						return response(await connection.rpc.call(CHANNEL, "browse/search", payload, signal));
+					}
+				},
+				credentials: {
+					async describe(payload, signal) {
+						if (payload.refs.some((ref) => credentialKind(ref) === void 0)) return badCredentialResponse("unknown cloud disk credential");
+						const rpc = await connection.rpc.call(CHANNEL, "credentials/describe", {}, signal);
+						if (!rpc.ok) return response(rpc);
+						const value = rpc.value;
+						return response({
+							ok: true,
+							value: { credentials: Object.fromEntries(payload.refs.map((ref) => [ref, ref === API_KEY_REF$1 ? value.apiKey : value.signingSecret])) }
+						});
+					},
+					async set(payload, signal) {
+						const kind = credentialKind(payload.ref);
+						if (kind === void 0) return badCredentialResponse("unknown cloud disk credential");
+						return response(await connection.rpc.call(CHANNEL, "credentials/set", {
+							kind,
+							value: payload.value
+						}, signal));
+					},
+					async unset(payload, signal) {
+						const kind = credentialKind(payload.ref);
+						if (kind === void 0) return badCredentialResponse("unknown cloud disk credential");
+						return response(await connection.rpc.call(CHANNEL, "credentials/unset", { kind }, signal));
+					}
+				}
+			};
+		}
+		//#endregion
 		//#region \0dsh-css:/Users/qihoo/per-wspace/deepseek-harness-studio/packages/client/ui-cloud-disk/src/client/CloudDiskPage.module.css.mjs
-		const css$1 = ".AhltiW_root{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);flex-direction:column;gap:16px;padding:28px 36px;display:flex;overflow:hidden}.AhltiW_connectionRoot{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);justify-content:center;align-items:center;padding:40px;display:flex}.AhltiW_header{justify-content:space-between;align-items:flex-start;gap:16px;display:flex}.AhltiW_headerActions{gap:8px;display:flex}.AhltiW_eyebrow{color:var(--dsw-alias-label-tertiary);margin:0 0 4px;font-size:12px}h1{margin:0;font-size:24px}.AhltiW_search{gap:8px;max-width:720px;display:flex}.AhltiW_search input{flex:1;min-width:0}.AhltiW_path{min-height:24px;color:var(--dsw-alias-label-secondary);flex-wrap:wrap;align-items:center;gap:4px;display:flex}.AhltiW_path button{color:inherit;font:inherit;cursor:pointer;background:0 0;border:0;border-radius:4px;padding:2px 4px}.AhltiW_path button:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_path button[aria-current=page]{color:var(--dsw-alias-label-primary);cursor:default}.AhltiW_connectionPanel{flex-direction:column;gap:16px;width:min(100%,480px);display:flex}.AhltiW_connectionPanel h1,.AhltiW_connectionPanel p{margin:0}.AhltiW_connectionPanel label{color:var(--dsw-alias-label-secondary);flex-direction:column;gap:6px;display:flex}.AhltiW_connectionProduct{color:var(--dsw-alias-label-tertiary);font-size:14px}.AhltiW_connectionDescription{color:var(--dsw-alias-label-secondary);line-height:1.55}.AhltiW_connectionStatus{border-bottom:1px solid var(--dsw-alias-border-secondary);flex-direction:column;gap:4px;padding:4px 0 20px;display:flex}.AhltiW_connectionStatus p,.AhltiW_connectionStatus span{color:var(--dsw-alias-label-secondary)}.AhltiW_connectionStatus strong{font-size:20px;font-weight:600}.AhltiW_connectionActions,.AhltiW_confirm{flex-wrap:wrap;gap:8px;display:flex}.AhltiW_confirm{border:1px solid var(--dsw-alias-border-secondary);border-radius:10px;align-items:center;padding:12px}.AhltiW_list{flex-direction:column;flex:1;gap:4px;width:100%;min-height:0;margin:0;padding:0 8px 0 0;list-style:none;display:flex;overflow:auto}.AhltiW_row{width:100%;color:inherit;text-align:left;cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:10px;align-items:center;gap:10px;padding:11px 12px;display:flex}.AhltiW_row:hover:not(:disabled){border-color:var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_row:disabled{cursor:default}.AhltiW_row span{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.AhltiW_row small{color:var(--dsw-alias-label-tertiary)}";
-		const tagId$1 = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskPage.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
+		const css$2 = ".AhltiW_root{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);flex-direction:column;gap:16px;padding:28px 36px;display:flex;overflow:hidden}.AhltiW_connectionRoot{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);justify-content:center;align-items:center;padding:40px;display:flex}.AhltiW_header{justify-content:space-between;align-items:flex-start;gap:16px;display:flex}.AhltiW_headerActions{gap:8px;display:flex}.AhltiW_eyebrow{color:var(--dsw-alias-label-tertiary);margin:0 0 4px;font-size:12px}h1{margin:0;font-size:24px}.AhltiW_search{gap:8px;max-width:720px;display:flex}.AhltiW_search input{flex:1;min-width:0}.AhltiW_path{min-height:24px;color:var(--dsw-alias-label-secondary);flex-wrap:wrap;align-items:center;gap:4px;display:flex}.AhltiW_path button{color:inherit;font:inherit;cursor:pointer;background:0 0;border:0;border-radius:4px;padding:2px 4px}.AhltiW_path button:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_path button[aria-current=page]{color:var(--dsw-alias-label-primary);cursor:default}.AhltiW_connectionPanel{flex-direction:column;gap:16px;width:min(100%,480px);display:flex}.AhltiW_connectionPanel h1,.AhltiW_connectionPanel p{margin:0}.AhltiW_connectionPanel label{color:var(--dsw-alias-label-secondary);flex-direction:column;gap:6px;display:flex}.AhltiW_connectionProduct{color:var(--dsw-alias-label-tertiary);font-size:14px}.AhltiW_connectionDescription{color:var(--dsw-alias-label-secondary);line-height:1.55}.AhltiW_connectionStatus{border-bottom:1px solid var(--dsw-alias-border-secondary);flex-direction:column;gap:4px;padding:4px 0 20px;display:flex}.AhltiW_connectionStatus p,.AhltiW_connectionStatus span{color:var(--dsw-alias-label-secondary)}.AhltiW_connectionStatus strong{font-size:20px;font-weight:600}.AhltiW_connectionActions,.AhltiW_confirm{flex-wrap:wrap;gap:8px;display:flex}.AhltiW_confirm{border:1px solid var(--dsw-alias-border-secondary);border-radius:10px;align-items:center;padding:12px}.AhltiW_list{flex-direction:column;flex:1;gap:4px;width:100%;min-height:0;margin:0;padding:0 8px 0 0;list-style:none;display:flex;overflow:auto}.AhltiW_row{width:100%;color:inherit;text-align:left;cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:10px;align-items:center;gap:10px;padding:11px 12px;display:flex}.AhltiW_row:hover:not(:disabled){border-color:var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_row:disabled{cursor:default}.AhltiW_row span{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.AhltiW_row small{color:var(--dsw-alias-label-tertiary)}";
+		const tagId$2 = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskPage.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@aicloud360/dsh-client-ui-cloud-disk";
-			tag.dataset.pluginCss = tagId$1;
-			tag.textContent = css$1;
+			tag.dataset.pluginCss = tagId$2;
+			tag.textContent = css$2;
 			document.head.appendChild(tag);
 		}
 		var CloudDiskPage_module_css_default = {
@@ -516,19 +593,36 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/qihoo/per-wspace/deepseek-harness-studio/packages/client/ui-cloud-disk/src/client/CloudDiskNavItem.module.css.mjs
-		const css = "._5u3GiW_entry{box-sizing:border-box;width:calc(100% + 8px);height:34px;color:var(--dsw-alias-label-primary);font:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:10px;align-items:center;gap:8px;margin:0 -4px;padding:6px 10px;font-size:14px;line-height:22px;display:flex;overflow:hidden}._5u3GiW_entry:hover,._5u3GiW_entry[data-selected]{background:var(--dsw-specific-sidebar-nav-item-active)}._5u3GiW_entry:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}._5u3GiW_entry span{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}._5u3GiW_entry._5u3GiW_rail{border-radius:50%;justify-content:center;gap:0;width:36px;height:36px;margin:0;padding:0}";
-		const tagId = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskNavItem.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+		const css$1 = "._5u3GiW_entry{box-sizing:border-box;width:calc(100% + 8px);height:34px;color:var(--dsw-alias-label-primary);font:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:10px;align-items:center;gap:8px;margin:0 -4px;padding:6px 10px;font-size:14px;line-height:22px;display:flex;overflow:hidden}._5u3GiW_entry:hover,._5u3GiW_entry[data-selected]{background:var(--dsw-specific-sidebar-nav-item-active)}._5u3GiW_entry:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}._5u3GiW_entry span{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}._5u3GiW_entry._5u3GiW_rail{border-radius:50%;justify-content:center;gap:0;width:36px;height:36px;margin:0;padding:0}";
+		const tagId$1 = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskNavItem.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@aicloud360/dsh-client-ui-cloud-disk";
-			tag.dataset.pluginCss = tagId;
-			tag.textContent = css;
+			tag.dataset.pluginCss = tagId$1;
+			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var CloudDiskNavItem_module_css_default = {
 			"entry": "_5u3GiW_entry",
 			"rail": "_5u3GiW_rail"
 		};
+		//#endregion
+		//#region lib/types/client/CloudDiskFooterItem.js
+		/** Opens the legacy full-screen CloudDisk workspace from the sidebar foot. */
+		function CloudDiskFooterItem({ wide, open, t }) {
+			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Tooltip, {
+				label: t("nav"),
+				delayMs: 500,
+				disabled: wide,
+				children: (0, react_jsx_runtime.jsxs)("button", {
+					type: "button",
+					className: `${CloudDiskNavItem_module_css_default.entry}${wide ? "" : ` ${CloudDiskNavItem_module_css_default.rail}`}`,
+					"aria-label": t("nav"),
+					onClick: open,
+					children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconFolderOpenOutline16, { size: wide ? 16 : 18 }), wide ? (0, react_jsx_runtime.jsx)("span", { children: t("nav") }) : null]
+				})
+			});
+		}
 		//#endregion
 		//#region lib/types/client/CloudDiskNavItem.js
 		/** First-level sidebar entry for the CloudDisk browser and connection flow. */
@@ -550,11 +644,55 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		//#region \0dsh-css:/Users/qihoo/per-wspace/deepseek-harness-studio/packages/client/ui-cloud-disk/src/client/CloudDiskOverlay.module.css.mjs
+		const css = ".QOJ55W_root{background:var(--dsw-alias-bg-base);min-width:0;min-height:0;color:var(--dsw-alias-label-primary);flex-direction:column;display:flex;position:absolute;inset:0}.QOJ55W_toolbar{box-sizing:border-box;border-bottom:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);justify-content:flex-end;min-height:48px;padding:10px 16px;display:flex}.QOJ55W_workspace{flex:1;min-width:0;min-height:0;display:flex}.QOJ55W_workspace>*{min-width:0;min-height:0}";
+		const tagId = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskOverlay.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@aicloud360/dsh-client-ui-cloud-disk";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var CloudDiskOverlay_module_css_default = {
+			"root": "QOJ55W_root",
+			"toolbar": "QOJ55W_toolbar",
+			"workspace": "QOJ55W_workspace"
+		};
+		//#endregion
+		//#region lib/types/client/CloudDiskOverlay.js
+		/** Full-screen CloudDisk workspace for runtimes without first-level page slots. */
+		function CloudDiskOverlay({ api, t, useStore, actions }) {
+			if (!useStore((state) => state.open)) return null;
+			return (0, react_jsx_runtime.jsxs)("section", {
+				className: CloudDiskOverlay_module_css_default.root,
+				role: "dialog",
+				"aria-modal": "true",
+				"aria-label": t("title"),
+				children: [(0, react_jsx_runtime.jsx)("div", {
+					className: CloudDiskOverlay_module_css_default.toolbar,
+					children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						onClick: () => {
+							actions.close();
+						},
+						children: t("closeWorkspace")
+					})
+				}), (0, react_jsx_runtime.jsx)("div", {
+					className: CloudDiskOverlay_module_css_default.workspace,
+					children: (0, react_jsx_runtime.jsx)(CloudDiskPage, {
+						api,
+						t
+					})
+				})]
+			});
+		}
+		//#endregion
 		//#region lib/types/client/locales.js
 		/** Chinese strings for the CloudDisk client namespace. */
 		const zh = {
 			nav: "云盘",
 			title: "360 AI 云盘",
+			closeWorkspace: "关闭云盘",
 			search: "搜索文件和目录…",
 			refresh: "刷新",
 			manageConnection: "管理连接",
@@ -601,6 +739,7 @@ window.__ModuleLoader__.load({
 		const en = {
 			nav: "Cloud Disk",
 			title: "360 AI Cloud Disk",
+			closeWorkspace: "Close cloud disk",
 			search: "Search files and folders…",
 			refresh: "Refresh",
 			manageConnection: "Manage connection",
@@ -644,6 +783,25 @@ window.__ModuleLoader__.load({
 			user: "Current user"
 		};
 		//#endregion
+		//#region lib/types/client/workspace-store.js
+		/**
+		* Create the root-scoped legacy workspace store.
+		* @returns the shared visibility handle used by the footer action and overlay.
+		*/
+		function createCloudDiskWorkspaceStore() {
+			return (0, _deepseek_ai_dsh_client_runtime_client.defineStore)({
+				init: () => ({ open: false }),
+				actions: {
+					open: (draft) => {
+						draft.open = true;
+					},
+					close: (draft) => {
+						draft.open = false;
+					}
+				}
+			});
+		}
+		//#endregion
 		//#region lib/types/client/index.js
 		const inject = [
 			"slots",
@@ -663,29 +821,78 @@ window.__ModuleLoader__.load({
 				if (connection === void 0) throw new Error("Host connection unavailable");
 				return connection;
 			};
-			const injected = () => ({ api: hostConnection().api });
-			const navInjected = () => ({
-				pageId: PAGE_ID,
-				open: () => {
-					ctx.layout.openPrimaryPage(PAGE_ID);
-				}
-			});
-			ctx.slots.inject("sidebar.primary.action", () => ctx.slots.register({
-				name: "sidebar.primary.action",
-				id: PAGE_ID,
-				order: 23,
-				locale: NS,
-				inject: navInjected
-			}, CloudDiskNavItem));
-			ctx.slots.inject("main.page", () => ctx.slots.register({
-				name: "main.page",
-				key: PAGE_ID,
-				locale: NS,
-				inject: injected
-			}, CloudDiskPage));
-			ctx.effect(() => () => {
-				ctx.layout.closePrimaryPage(PAGE_ID);
-			}, "ui-cloud-disk: close page on teardown");
+			const injected = () => ({ api: createCloudDiskApi(hostConnection()) });
+			const modern = () => ctx.slots.spec("sidebar.primary.action") !== void 0 && ctx.slots.spec("main.page") !== void 0;
+			const mountModern = () => {
+				const nav = ctx.slots.inject("sidebar.primary.action", () => ctx.slots.register({
+					name: "sidebar.primary.action",
+					id: PAGE_ID,
+					order: 23,
+					locale: NS,
+					inject: () => ({
+						pageId: PAGE_ID,
+						open: () => {
+							ctx.layout.openPrimaryPage(PAGE_ID);
+						}
+					})
+				}, CloudDiskNavItem));
+				const page = ctx.slots.inject("main.page", () => [ctx.slots.register({
+					name: "main.page",
+					key: PAGE_ID,
+					locale: NS,
+					inject: injected
+				}, CloudDiskPage), () => {
+					ctx.layout.closePrimaryPage(PAGE_ID);
+				}]);
+				return () => {
+					page();
+					nav();
+				};
+			};
+			const mountLegacy = () => {
+				const workspace = createCloudDiskWorkspaceStore();
+				const footer = ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
+					name: "sidebar.footer.action",
+					id: PAGE_ID,
+					order: 23,
+					locale: NS,
+					store: workspace,
+					inject: (actions) => ({ open: () => {
+						actions.open();
+					} })
+				}, CloudDiskFooterItem));
+				const overlay = ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+					name: "shell.overlay",
+					id: PAGE_ID,
+					order: 23,
+					locale: NS,
+					store: workspace,
+					inject: injected
+				}, CloudDiskOverlay));
+				return () => {
+					overlay();
+					footer();
+				};
+			};
+			ctx.effect(() => {
+				let mode;
+				let dispose = () => {};
+				const reconcile = () => {
+					const next = modern() ? "modern" : "legacy";
+					if (next === mode) return;
+					dispose();
+					mode = next;
+					dispose = next === "modern" ? mountModern() : mountLegacy();
+				};
+				const offPrimary = ctx.slots.subscribe("sidebar.primary.action", reconcile);
+				const offPage = ctx.slots.subscribe("main.page", reconcile);
+				reconcile();
+				return () => {
+					offPage();
+					offPrimary();
+					dispose();
+				};
+			}, "ui-cloud-disk: runtime adapter");
 		}
 		//#endregion
 		exports.apply = apply;

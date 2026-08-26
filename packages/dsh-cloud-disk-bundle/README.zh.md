@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-这个可选 Profile Bundle 安装 Host 侧的 CloudDisk 服务、直连 360 API Provider 和应用侧边栏中的云盘页面；它不会向任何 Agent 默认增加工具。Desktop 插件中心和 `dsh plugin` 均安装同一个 Bundle。云盘工具由用户在 Preset 广场安装的“云盘模式”Preset 提供；用户可在新会话中选择它，或将其设为未来新会话的默认 Preset。Provider 通过 `dsh-credentials` 按引用读取 `CLOUD_DISK_API_KEY` 与 `CLOUD_DISK_SIGNING_SECRET`，Bundle 和 Preset 中均不保存密钥值。
+这个可选 Profile Bundle 安装 Host 侧的 CloudDisk 服务、直连 360 API Provider 和云盘工作台。Desktop 插件中心和 `dsh plugin` 均安装同一个 Bundle。运行时提供一级页面 slot 时，工作台显示为主侧边栏中的“云盘”；旧运行时则将“云盘”放在侧边栏底部，并打开同一个全屏工作台。它不会向任何 Agent 默认增加工具。云盘工具由用户在 Preset 广场安装的“云盘模式”Preset 提供；用户可在新会话中选择它，或将其设为未来新会话的默认 Preset。Provider 通过 `dsh-credentials` 按引用读取 `CLOUD_DISK_API_KEY` 与 `CLOUD_DISK_SIGNING_SECRET`，Bundle 和 Preset 中均不保存密钥值。
 
 [`cordis.patch.yml`](cordis.patch.yml) 内置了已审计的非敏感生产默认值，包括 endpoint、client 标识、超时和重试次数；若部署需要不同值，可由 Profile overlay 覆盖。首次进入时，每位用户都会被引导通过 Host 凭据存储保存自己的 API Key 和签名材料；界面只读取“是否已配置”的状态，绝不读取凭据值。用户可以在同一页面替换任意一项，或删除两项本地凭据。签名材料仍是每位用户请求所需的 Host 侧前置条件。
 

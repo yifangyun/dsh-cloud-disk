@@ -2,12 +2,214 @@ import { createHash } from "node:crypto";
 import z from "@deepseek-ai/schemastery";
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 import CloudDiskRuntime, { CloudDiskError } from "@aicloud360/dsh-cloud-disk";
+//#region lib/types/cloud-disk-rpc.js
+/** Private Connection RPC for the CloudDisk browser workspace. */
+const CHANNEL = "/cloud-disk";
+const API_KEY_REF = credentialRef("CLOUD_DISK_API_KEY");
+const SIGNING_SECRET_REF = credentialRef("CLOUD_DISK_SIGNING_SECRET");
+const credentialKindSchema = z.union([z.const("apiKey"), z.const("signingSecret")]);
+const listSchema = z.object({
+	parentId: z.string(),
+	cursor: z.string(),
+	limit: z.number().step(1).min(1)
+});
+const searchSchema = z.object({
+	query: z.string().required(),
+	cursor: z.string(),
+	limit: z.number().step(1).min(1)
+});
+const credentialSetSchema = z.object({
+	kind: credentialKindSchema.required(),
+	value: z.string().min(1).required()
+});
+const credentialUnsetSchema = z.object({ kind: credentialKindSchema.required() });
+const CLOUD_DISK_FAILURE_CODES = new Set([
+	"CLOUD_DISK_PROVIDER_CONFIGURED_MISSING",
+	"CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE",
+	"CLOUD_DISK_PROVIDER_UNAVAILABLE",
+	"CLOUD_DISK_PROVIDER_AMBIGUOUS",
+	"CLOUD_DISK_CREDENTIAL_MISSING",
+	"CLOUD_DISK_SIGNING_SECRET_MISSING",
+	"CLOUD_DISK_AUTHENTICATION_FAILED",
+	"CLOUD_DISK_NETWORK_FAILED",
+	"CLOUD_DISK_INVALID_REQUEST",
+	"CLOUD_DISK_PROVIDER_FAILED"
+]);
+function credentialFor(kind) {
+	return kind === "apiKey" ? API_KEY_REF : SIGNING_SECRET_REF;
+}
+function parse(schema, payload) {
+	try {
+		return schema(payload);
+	} catch {
+		return;
+	}
+}
+function badRequest(message) {
+	return {
+		ok: false,
+		error: {
+			code: "bad-request",
+			message,
+			details: { issues: [] }
+		}
+	};
+}
+function internalFailure(message) {
+	return {
+		ok: false,
+		error: {
+			code: "internal",
+			message,
+			details: {}
+		}
+	};
+}
+function cancelled() {
+	return {
+		ok: false,
+		error: {
+			code: "cancelled",
+			message: "cloud disk request was aborted",
+			details: {}
+		}
+	};
+}
+function failureCode(error) {
+	if (!(error instanceof CloudDiskError) || !CLOUD_DISK_FAILURE_CODES.has(error.code)) return void 0;
+	return error.code;
+}
+function pageView(page) {
+	return {
+		nodes: page.nodes.map((node) => ({
+			id: node.id,
+			kind: node.kind,
+			name: node.name,
+			...node.parentId === void 0 ? {} : { parentId: node.parentId },
+			...node.size === void 0 ? {} : { size: node.size },
+			...node.updatedAt === void 0 ? {} : { updatedAt: node.updatedAt }
+		})),
+		...page.nextCursor === void 0 ? {} : { nextCursor: page.nextCursor }
+	};
+}
+/**
+* Register the CloudDisk browser RPC channel. Credential endpoints only address
+* the two CloudDisk references, so this plugin cannot become a general
+* credential-inspection surface.
+* @param ctx - Host context with the selected CloudDisk provider and credentials.
+*/
+function installCloudDiskRpc(ctx) {
+	ctx.connection.rpc.handle(CHANNEL, async (endpoint, payload, signal) => {
+		if (signal.aborted) return cancelled();
+		switch (endpoint) {
+			case "status":
+				if (parse(z.object({}), payload) === void 0) return badRequest("invalid cloud disk status request");
+				try {
+					return {
+						ok: true,
+						value: {
+							available: true,
+							user: await ctx.cloudDisk.getUser(signal)
+						}
+					};
+				} catch (error) {
+					const errorCode = failureCode(error);
+					return {
+						ok: true,
+						value: {
+							available: false,
+							...errorCode === void 0 ? {} : { errorCode }
+						}
+					};
+				}
+			case "credentials/describe": {
+				if (parse(z.object({}), payload) === void 0) return badRequest("invalid cloud disk credential request");
+				const [apiKey, signingSecret] = await Promise.all([ctx.credentials.describe(API_KEY_REF), ctx.credentials.describe(SIGNING_SECRET_REF)]);
+				return {
+					ok: true,
+					value: {
+						apiKey,
+						signingSecret
+					}
+				};
+			}
+			case "credentials/set": {
+				const parsed = parse(credentialSetSchema, payload);
+				if (parsed === void 0) return badRequest("invalid cloud disk credential request");
+				try {
+					await ctx.credentials.set(credentialFor(parsed.kind), parsed.value);
+					return {
+						ok: true,
+						value: {}
+					};
+				} catch {
+					return internalFailure("cloud disk credential could not be saved");
+				}
+			}
+			case "credentials/unset": {
+				const parsed = parse(credentialUnsetSchema, payload);
+				if (parsed === void 0) return badRequest("invalid cloud disk credential request");
+				try {
+					await ctx.credentials.unset(credentialFor(parsed.kind));
+					return {
+						ok: true,
+						value: {}
+					};
+				} catch {
+					return internalFailure("cloud disk credential could not be removed");
+				}
+			}
+			case "browse/list": {
+				const parsed = parse(listSchema, payload);
+				if (parsed === void 0) return badRequest("invalid cloud disk list request");
+				try {
+					const page = await ctx.cloudDisk.list({
+						...parsed.parentId === void 0 ? {} : { parentId: parsed.parentId },
+						...parsed.cursor === void 0 ? {} : { cursor: parsed.cursor },
+						...parsed.limit === void 0 ? {} : { limit: parsed.limit }
+					}, signal);
+					if (signal.aborted) return cancelled();
+					return {
+						ok: true,
+						value: pageView(page)
+					};
+				} catch {
+					return signal.aborted ? cancelled() : internalFailure("cloud disk listing failed");
+				}
+			}
+			case "browse/search": {
+				const parsed = parse(searchSchema, payload);
+				if (parsed === void 0 || parsed.query.trim() === "") return badRequest("invalid cloud disk search request");
+				try {
+					const page = await ctx.cloudDisk.search({
+						query: parsed.query.trim(),
+						...parsed.cursor === void 0 ? {} : { cursor: parsed.cursor },
+						...parsed.limit === void 0 ? {} : { limit: parsed.limit }
+					}, signal);
+					if (signal.aborted) return cancelled();
+					return {
+						ok: true,
+						value: pageView(page)
+					};
+				} catch {
+					return signal.aborted ? cancelled() : internalFailure("cloud disk search failed");
+				}
+			}
+			default: return badRequest("unknown cloud disk endpoint");
+		}
+	}, { authority: "loopback" });
+}
+//#endregion
 //#region lib/types/index.js
 /** Direct Host-side adapter for the audited 360 CloudDisk OpenAPI. */
 /** Cordis loader name for the direct CloudDisk Provider plugin. */
 const name = "cloud-disk-api-provider";
 /** Host services required to register and operate the direct Provider. */
-const inject = ["cloudDisk", "credentials"];
+const inject = [
+	"cloudDisk",
+	"credentials",
+	"connection"
+];
 /** Runtime schema for the complete, explicit Provider configuration. */
 const Config = z.object({
 	endpoint: z.string().required(),
@@ -264,6 +466,7 @@ function apply(ctx, config) {
 		timeoutMs: config.timeoutMs,
 		maxRetries: config.maxRetries
 	});
+	installCloudDiskRpc(ctx);
 }
 function isRecord(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);

@@ -26,7 +26,7 @@ dsh --profile web --dump-config
 
 输出应包含 `@aicloud360/dsh-cloud-disk`、`@aicloud360/dsh-cloud-disk-api-provider` 和 `@aicloud360/dsh-client-ui-cloud-disk`。它不应安装 Preset，也不应为通用 Agent 添加云盘工具。
 
-Desktop 用户在插件中心安装同一个 Bundle，不需要再执行命令。安装完成后重启 Host，并确认左侧栏出现“云盘”。
+Desktop 用户在插件中心安装同一个 Bundle，不需要再执行命令。安装完成后重启 Host，并确认侧边栏出现“云盘”。新版运行时显示在主侧边栏；公开 `dsh@0.1.1-rc.2` 等没有 `main.page` 的运行时显示在侧边栏底部，点击后打开全屏云盘工作台。两种界面均使用 Bundle 私有的 Connection RPC，可在工作台内完成凭据配置、连接、目录浏览和搜索；不需要额外的设置页面。
 
 ## 安装云盘 Preset
 
@@ -69,7 +69,7 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
   dsh plugin --profile web remove @aicloud360/dsh-cloud-disk-bundle
 ```
 
-成功标准是两种安装方式均能完成、配置转储包含三个实际装配行、Web 页面左侧栏显示“云盘”，并且 Bundle 卸载命令成功。临时目录只在验证完成后清理，方便排查失败的 pnpm 日志与 Profile manifest。
+成功标准是两种安装方式均能完成、配置转储包含三个实际装配行、Web 页面出现可点击的“云盘”入口，并且 Bundle 卸载命令成功。新版运行时在主侧边栏验证；`dsh@0.1.1-rc.2` 在侧边栏底部验证，点击后应显示可配置和浏览的全屏工作台。临时目录只在验证完成后清理，方便排查失败的 pnpm 日志与 Profile manifest。
 
 ## pnpm peer 提示
 
@@ -83,4 +83,4 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" dsh --profile web
 ```
 
-在浏览器中确认左侧栏出现云盘入口。填写测试 API Key 和签名材料后，确认连接、目录浏览、搜索、刷新和续页可用，再在同一页面删除测试凭据。凭据仅保存在临时 Home，绝不写入当前用户的 `~/.dsh`。
+在浏览器中确认侧边栏出现云盘入口并点击它。填写测试 API Key 和签名材料后，确认同一工作台中的连接、目录浏览、搜索、刷新和续页可用，再在同一页面删除测试凭据。凭据仅保存在临时 Home，绝不写入当前用户的 `~/.dsh`。

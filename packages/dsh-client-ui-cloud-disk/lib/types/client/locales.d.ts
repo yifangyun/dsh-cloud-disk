@@ -2,6 +2,7 @@
 export declare const zh: {
     readonly nav: "云盘";
     readonly title: "360 AI 云盘";
+    readonly closeWorkspace: "关闭云盘";
     readonly search: "搜索文件和目录…";
     readonly refresh: "刷新";
     readonly manageConnection: "管理连接";
@@ -48,6 +49,7 @@ export declare const zh: {
 export declare const en: {
     readonly nav: "Cloud Disk";
     readonly title: "360 AI Cloud Disk";
+    readonly closeWorkspace: "Close cloud disk";
     readonly search: "Search files and folders…";
     readonly refresh: "Refresh";
     readonly manageConnection: "Manage connection";

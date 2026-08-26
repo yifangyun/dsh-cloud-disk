@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-CloudDisk browser client plugin. It registers one first-level sidebar action and its keyed primary page. The page uses the Host CloudDisk RPC for connection setup, credential replacement and deletion, user lookup, browsing, search, refresh, and cursor-based loading. It never reads credential values; the Host credential API accepts the values only while the user saves them.
+CloudDisk browser client plugin. It detects the slots declared by the active runtime rather than the Desktop or DSH version. A runtime with both `sidebar.primary.action` and `main.page` gets the first-level sidebar action and keyed primary page. An older runtime gets a `sidebar.footer.action` entry that opens the same full-screen CloudDisk workspace through `shell.overlay`. The workspace uses the Host CloudDisk RPC for connection setup, credential replacement and deletion, user lookup, browsing, search, refresh, and cursor-based loading. It never reads credential values; the Host credential API accepts the values only while the user saves them.
 
 The plugin is a deterministic browser surface. It contributes no Agent tools and does not create, install, select, or modify an Agent Preset. The CloudDisk Bundle supplies the required Host service and Provider.
 

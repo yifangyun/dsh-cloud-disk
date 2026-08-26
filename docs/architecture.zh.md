@@ -17,13 +17,19 @@
 
 | 包 | 职责 | 安装后的行为 |
 | --- | --- | --- |
-| `dsh-cloud-disk-bundle` | Profile patch 和依赖入口 | 添加 Host 服务、Provider 和左侧栏云盘页面。 |
+| `dsh-cloud-disk-bundle` | Profile patch 和依赖入口 | 添加 Host 服务、Provider 和云盘工作台。 |
 | `dsh-cloud-disk` | Provider 无关的云盘服务接口 | 定义目录、搜索、用户和错误数据。 |
 | `dsh-cloud-disk-api-provider` | 360 云盘 HTTP Provider | 使用 Host 凭据存储中的 `CLOUD_DISK_API_KEY` 与 `CLOUD_DISK_SIGNING_SECRET` 请求 360 API。 |
 | `dsh-client-ui-cloud-disk` | Web 客户端页面 | 提供连接、目录浏览、搜索、刷新和续页界面。 |
 | `dsh-tool-cloud-disk` | Agent 工具实现 | 提供只读云盘工具；独立 Bundle 会安装此依赖，但不会把它加入外部 Profile 的 Agent。 |
 
 `dsh-cloud-disk-bundle` 是唯一应作为 `dsh plugin` 直接安装的包。一次安装会由 pnpm 自动解析和安装其余四个包；不要手工连续执行五次安装命令。Desktop 插件中心对同一包执行等价的 Profile 安装事务。外部 `dsh` 安装还必须已经提供 Bundle 所声明的 `@deepseek-ai/*` peer dependencies。
+
+## 运行时界面兼容
+
+客户端根据运行时实际声明的 slot 选择入口，不根据 Desktop、CLI 或 `dsh` 版本号推断。`sidebar.primary.action` 与 `main.page` 同时存在时，云盘位于主侧边栏并作为一级页面打开；这是当前 Desktop 和新运行时的界面。任一 slot 缺失时，客户端改用旧运行时已有的 `sidebar.footer.action` 与 `shell.overlay`：侧边栏底部的“云盘”按钮会打开全屏工作台。
+
+两种入口复用同一个连接和浏览页面。Bundle 在 Host 注册独立的 `/cloud-disk` Connection RPC，并使用 loopback 权限；它不依赖官方静态 `api.cloudDisk` 字段。因此公开 `dsh@0.1.1-rc.2` 也可完成 API Key、签名材料、连接、目录浏览、搜索、刷新、分页和断开连接。凭据端点只允许两项云盘引用，页面永远不能枚举、读取或修改其他 Host 凭据。用户不需要在设置中配置云盘，也不需要选择 Desktop 专用安装包。运行时加载期间 slot 发生变化时，客户端会释放旧适配器，只保留一种入口。
 
 ## Profile 与凭据
 

@@ -3,10 +3,11 @@ import { createHash } from 'node:crypto';
 import z from '@deepseek-ai/schemastery';
 import { credentialRef } from '@deepseek-ai/dsh-credentials';
 import CloudDiskRuntime, { CloudDiskError } from '@aicloud360/dsh-cloud-disk';
+import { installCloudDiskRpc } from "./cloud-disk-rpc.js";
 /** Cordis loader name for the direct CloudDisk Provider plugin. */
 export const name = 'cloud-disk-api-provider';
 /** Host services required to register and operate the direct Provider. */
-export const inject = ['cloudDisk', 'credentials'];
+export const inject = ['cloudDisk', 'credentials', 'connection'];
 /** Runtime schema for the complete, explicit Provider configuration. */
 export const Config = z.object({
     endpoint: z.string().required(),
@@ -223,6 +224,7 @@ export function apply(ctx, config) {
         timeoutMs: config.timeoutMs,
         maxRetries: config.maxRetries,
     });
+    installCloudDiskRpc(ctx);
 }
 function isRecord(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function credentialMissing() { return new CloudDiskError('CloudDisk credential is not configured', 'CLOUD_DISK_CREDENTIAL_MISSING'); }
