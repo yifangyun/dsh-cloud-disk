@@ -1,7 +1,7 @@
 {
   "name": "@aicloud360/dsh-cloud-disk-api-provider",
   "description": "Direct Host-side HTTP provider adapter for the native CloudDisk capability seam",
-  "version": "0.1.1-alpha.1",
+  "version": "0.1.1-alpha.2",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
@@ -38,6 +38,6 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@aicloud360/dsh-cloud-disk": "0.1.1-alpha.1"
+    "@aicloud360/dsh-cloud-disk": "0.1.1-alpha.2"
   }
 }

@@ -1,13 +1,13 @@
 # CloudDisk 安装与发布验证
 
-本文适用于 `@aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.1`。`dsh plugin` 会把参数转交给 pnpm，因此运行机器必须有可用的 `dsh` 和 `pnpm`。
+本文适用于 `@aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.2`。`dsh plugin` 会把参数转交给 pnpm，因此运行机器必须有可用的 `dsh` 和 `pnpm`。
 
 ## 安装
 
 选择要启用云盘的 Profile。推荐从 npm 安装固定版本：
 
 ```sh
-dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.1
+dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.2
 ```
 
 也可以从 GitHub 安装最新 `main`：
@@ -25,6 +25,12 @@ dsh --profile web --dump-config
 ```
 
 输出应包含 `@aicloud360/dsh-cloud-disk`、`@aicloud360/dsh-cloud-disk-api-provider` 和 `@aicloud360/dsh-client-ui-cloud-disk`。它不应安装 Preset，也不应为通用 Agent 添加云盘工具。
+
+Desktop 用户在插件中心安装同一个 Bundle，不需要再执行命令。安装完成后重启 Host，并确认左侧栏出现“云盘”。
+
+## 安装云盘 Preset
+
+Bundle 只提供 Host 和页面。要让新 Agent 使用只读云盘工具，在 Desktop 的 Preset 广场安装“云盘模式”。该操作将 Preset 安装到用户自定义区域；选择它创建新会话，或在 Agent Preset 设置中设为默认值。默认值只影响之后创建的会话。
 
 ## 卸载
 
@@ -47,7 +53,7 @@ GIT_TEST_HOME="$(mktemp -d /tmp/dsh-cloud-disk-git-home.XXXXXX)"
 
 cd "$TEST_WORK"
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
-  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.1
+  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.2
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/npm-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/npm-cloud-disk.yml"
@@ -63,7 +69,7 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
   dsh plugin --profile web remove @aicloud360/dsh-cloud-disk-bundle
 ```
 
-成功标准是两种安装方式均能完成、配置转储包含三个实际装配行，并且 Bundle 卸载命令成功。临时目录只在验证完成后清理，方便排查失败的 pnpm 日志与 Profile manifest。
+成功标准是两种安装方式均能完成、配置转储包含三个实际装配行、Web 页面左侧栏显示“云盘”，并且 Bundle 卸载命令成功。临时目录只在验证完成后清理，方便排查失败的 pnpm 日志与 Profile manifest。
 
 ## pnpm peer 提示
 

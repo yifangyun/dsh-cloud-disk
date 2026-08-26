@@ -1,6 +1,6 @@
 # CloudDisk 插件架构
 
-`@aicloud360/dsh-cloud-disk-bundle` 是外部用户唯一需要直接安装的 CloudDisk Profile Bundle。它将云盘 Host 服务、360 API Provider 和侧边栏云盘页面加入目标 Profile；不会安装 Preset，也不会向通用 Agent 自动添加云盘工具。
+`@aicloud360/dsh-cloud-disk-bundle` 是 CloudDisk 的唯一 Profile Bundle。Desktop 插件中心与 `dsh plugin` 均安装这一个包；它将云盘 Host 服务、360 API Provider 和侧边栏云盘页面加入目标 Profile。
 
 ## 包关系
 
@@ -23,13 +23,17 @@
 | `dsh-client-ui-cloud-disk` | Web 客户端页面 | 提供连接、目录浏览、搜索、刷新和续页界面。 |
 | `dsh-tool-cloud-disk` | Agent 工具实现 | 提供只读云盘工具；独立 Bundle 会安装此依赖，但不会把它加入外部 Profile 的 Agent。 |
 
-`dsh-cloud-disk-bundle` 是唯一应作为 `dsh plugin` 直接安装的包。一次安装会由 pnpm 自动解析和安装其余四个包；不要手工连续执行五次安装命令。外部 `dsh` 安装还必须已经提供 Bundle 所声明的 `@deepseek-ai/*` peer dependencies。
+`dsh-cloud-disk-bundle` 是唯一应作为 `dsh plugin` 直接安装的包。一次安装会由 pnpm 自动解析和安装其余四个包；不要手工连续执行五次安装命令。Desktop 插件中心对同一包执行等价的 Profile 安装事务。外部 `dsh` 安装还必须已经提供 Bundle 所声明的 `@deepseek-ai/*` peer dependencies。
 
 ## Profile 与凭据
 
 Bundle 的 `cordis.patch.yml` 只保存 endpoint、客户端标识、超时和重试等非敏感配置。凭据在云盘页面中由当前用户写入 Host 凭据存储，页面只能读取已配置状态，不能读取凭据值。
 
-仓库内置的 `cloud-disk` Preset 与外部 Bundle 是不同发行面。内置 Preset 可在本仓库集成的 `dsh` 中提供模型可见工具；npm 或 GitHub 安装的 Bundle 不分发、安装或管理 Preset。
+## Agent Preset
+
+云盘工具由 `cloud-disk` Agent Preset 提供，而不是 Bundle 的隐式副作用。Desktop Preset 广场安装该制品时，会将它复制到 `~/.dsh/.agent-presets/cloud-disk`，因此它显示在用户的自定义区域。CLI 用户可将等价的 Preset 目录放入同一用户根目录。
+
+用户在新会话中选择“云盘模式”后，Agent 才会获得只读的 `cloud_disk_list` 和 `cloud_disk_search` 工具。缺少 Bundle 时，该 Preset 的工具无法解析 Provider；Desktop 应先安装 Bundle。用户也可在 Agent Preset 设置中将“云盘模式”设为默认值，使之后未显式选择 Preset 的新会话自动获得这些工具；现有会话不受影响。
 
 ## 当前范围
 
