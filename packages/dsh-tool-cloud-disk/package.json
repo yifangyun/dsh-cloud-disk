@@ -1,7 +1,7 @@
 {
   "name": "@aicloud360/dsh-tool-cloud-disk",
   "description": "Model-facing CloudDisk tools (cloud_disk_list, cloud_disk_search) over the CloudDisk capability seam (ctx.cloudDisk)",
-  "version": "0.1.1-alpha.3",
+  "version": "0.1.1-alpha.4",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
@@ -38,6 +38,6 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@aicloud360/dsh-cloud-disk": "0.1.1-alpha.3"
+    "@aicloud360/dsh-cloud-disk": "0.1.1-alpha.4"
   }
 }
