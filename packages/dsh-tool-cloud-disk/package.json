@@ -1,0 +1,43 @@
+{
+  "name": "@aicloud360/dsh-tool-cloud-disk",
+  "description": "Model-facing CloudDisk tools (cloud_disk_list, cloud_disk_search) over the CloudDisk capability seam (ctx.cloudDisk)",
+  "version": "0.1.1-alpha.1",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yifangyun/dsh-cloud-disk.git",
+    "directory": "packages/dsh-tool-cloud-disk"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-invariants": "0.1.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.1.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.1.1-rc.2",
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@aicloud360/dsh-cloud-disk": "0.1.1-alpha.1"
+  }
+}

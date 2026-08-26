@@ -1,0 +1,23 @@
+# Optional CloudDisk product bundle. This inserts Host-plane capability rows;
+# selecting the shipped `cloud-disk` preset separately determines which agents
+# receive model-facing tools. Generic profiles and presets remain unchanged.
+- insert:
+    - id: cloud-disk
+      name: '@aicloud360/dsh-cloud-disk'
+      config:
+        provider: 360-http
+
+    - id: cloud-disk-api-provider
+      name: '@aicloud360/dsh-cloud-disk-api-provider'
+      config:
+        endpoint: https://openapi.eyun.360.cn/intf.php
+        apiKeyRef: CLOUD_DISK_API_KEY
+        signingSecretRef: CLOUD_DISK_SIGNING_SECRET
+        clientEnv: prod
+        clientSource: default
+        subChannel: open
+        timeoutMs: 30000
+        maxRetries: 1
+
+    - id: ui-cloud-disk
+      name: '@aicloud360/dsh-client-ui-cloud-disk'
