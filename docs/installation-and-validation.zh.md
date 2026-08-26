@@ -1,22 +1,22 @@
 # CloudDisk 安装与发布验证
 
-本文适用于 `@aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.4`。`dsh plugin` 会把参数转交给 pnpm，因此运行机器必须有可用的 `dsh` 和 `pnpm`。
+本文适用于 CloudDisk Bundle 的当前发布版。`dsh plugin` 会把参数转交给 pnpm，因此运行机器必须有可用的 `dsh` 和 `pnpm`。
 
 ## 安装
 
 选择要启用云盘的 Profile。推荐从 npm 安装固定版本：
 
 ```sh
-dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.4
+dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@latest
 ```
 
-也可以从 GitHub 安装已发布的不可变 tag：
+也可以从 GitHub 安装最新 `main`：
 
 ```sh
-dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-alpha.4
+dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#main
 ```
 
-两种方式都只需要这一条 Bundle 安装命令。pnpm 会自动安装 Bundle 的四个组件依赖；不要分别安装五个包。npm 固定版本与 GitHub tag 都适合可重现部署；仅在开发仓库最新提交时才使用 `main`。
+两种方式都只需要这一条 Bundle 安装命令。pnpm 会自动安装 Bundle 的四个组件依赖；不要分别安装五个包。`@latest` 与 GitHub `main` 跟随当前发布；需要可重现部署时，记录并替换为已审阅的确切 npm 版本或 Git tag。
 
 安装后可检查实际装配结果，命令不会启动 Web 服务：
 
@@ -53,7 +53,7 @@ GIT_TEST_HOME="$(mktemp -d /tmp/dsh-cloud-disk-git-home.XXXXXX)"
 
 cd "$TEST_WORK"
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
-  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.4
+  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@latest
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/npm-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/npm-cloud-disk.yml"
@@ -61,7 +61,7 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh plugin --profile web remove @aicloud360/dsh-cloud-disk-bundle
 
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
-  dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-alpha.4
+  dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#main
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/git-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/git-cloud-disk.yml"
