@@ -7,16 +7,16 @@
 选择要启用云盘的 Profile。推荐从 npm 安装固定版本：
 
 ```sh
-dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@latest
+dsh plugin --profile web add --registry=https://registry.npmjs.org @aicloud360/dsh-cloud-disk-bundle@latest
 ```
 
 也可以从 GitHub 安装最新 `main`：
 
 ```sh
-dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#main
+dsh plugin --profile web add --registry=https://registry.npmjs.org github:yifangyun/dsh-cloud-disk#main
 ```
 
-两种方式都只需要这一条 Bundle 安装命令。pnpm 会自动安装 Bundle 的四个组件依赖；不要分别安装五个包。`@latest` 与 GitHub `main` 跟随当前发布；需要可重现部署时，记录并替换为已审阅的确切 npm 版本或 Git tag。
+两种方式都只需要这一条 Bundle 安装命令。pnpm 会自动安装 Bundle 的四个组件依赖；不要分别安装五个包。命令显式使用 npm 官方 registry，避免第三方镜像的 dist-tag 缓存延迟。`@latest` 与 GitHub `main` 跟随当前发布；需要可重现部署时，记录并替换为已审阅的确切 npm 版本或 Git tag。
 
 安装后可检查实际装配结果，命令不会启动 Web 服务：
 
@@ -53,7 +53,7 @@ GIT_TEST_HOME="$(mktemp -d /tmp/dsh-cloud-disk-git-home.XXXXXX)"
 
 cd "$TEST_WORK"
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
-  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@latest
+  dsh plugin --profile web add --registry=https://registry.npmjs.org @aicloud360/dsh-cloud-disk-bundle@latest
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/npm-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/npm-cloud-disk.yml"
@@ -61,7 +61,7 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh plugin --profile web remove @aicloud360/dsh-cloud-disk-bundle
 
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
-  dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#main
+  dsh plugin --profile web add --registry=https://registry.npmjs.org github:yifangyun/dsh-cloud-disk#main
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/git-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/git-cloud-disk.yml"
