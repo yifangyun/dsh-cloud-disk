@@ -12,16 +12,11 @@ window.__ModuleLoader__.load({
 		/** CloudDisk's stable private RPC client over the generic Connection channel. */
 		const CHANNEL = "/cloud-disk";
 		const API_KEY_REF$1 = "CLOUD_DISK_API_KEY";
-		const SIGNING_SECRET_REF$1 = "CLOUD_DISK_SIGNING_SECRET";
 		function response(result) {
 			return {
 				rpcId: "cloud-disk",
 				result
 			};
-		}
-		function credentialKind(ref) {
-			if (ref === API_KEY_REF$1) return "apiKey";
-			if (ref === SIGNING_SECRET_REF$1) return "signingSecret";
 		}
 		function badCredentialResponse(message) {
 			return {
@@ -38,7 +33,7 @@ window.__ModuleLoader__.load({
 		}
 		/**
 		* Create the CloudDisk browser API from the plugin-private generic RPC channel.
-		* The returned credentials methods accept only the two CloudDisk references;
+		* The returned credentials methods accept only the CloudDisk API-key reference;
 		* they cannot be used to inspect or modify unrelated Host credentials.
 		* @param connection - active browser-to-Host connection.
 		* @returns The API subset consumed by the CloudDisk workspace.
@@ -58,34 +53,29 @@ window.__ModuleLoader__.load({
 				},
 				credentials: {
 					async describe(payload, signal) {
-						if (payload.refs.some((ref) => credentialKind(ref) === void 0)) return badCredentialResponse("unknown cloud disk credential");
+						if (payload.refs.some((ref) => ref !== API_KEY_REF$1)) return badCredentialResponse("unknown cloud disk credential");
 						const rpc = await connection.rpc.call(CHANNEL, "credentials/describe", {}, signal);
 						if (!rpc.ok) return response(rpc);
 						const value = rpc.value;
 						return response({
 							ok: true,
-							value: { credentials: Object.fromEntries(payload.refs.map((ref) => [ref, ref === API_KEY_REF$1 ? value.apiKey : value.signingSecret])) }
+							value: { credentials: Object.fromEntries(payload.refs.map((ref) => [ref, value.apiKey])) }
 						});
 					},
 					async set(payload, signal) {
-						const kind = credentialKind(payload.ref);
-						if (kind === void 0) return badCredentialResponse("unknown cloud disk credential");
-						return response(await connection.rpc.call(CHANNEL, "credentials/set", {
-							kind,
-							value: payload.value
-						}, signal));
+						if (payload.ref !== API_KEY_REF$1) return badCredentialResponse("unknown cloud disk credential");
+						return response(await connection.rpc.call(CHANNEL, "credentials/set", { value: payload.value }, signal));
 					},
 					async unset(payload, signal) {
-						const kind = credentialKind(payload.ref);
-						if (kind === void 0) return badCredentialResponse("unknown cloud disk credential");
-						return response(await connection.rpc.call(CHANNEL, "credentials/unset", { kind }, signal));
+						if (payload.ref !== API_KEY_REF$1) return badCredentialResponse("unknown cloud disk credential");
+						return response(await connection.rpc.call(CHANNEL, "credentials/unset", {}, signal));
 					}
 				}
 			};
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/qihoo/per-wspace/deepseek-harness-studio/packages/client/ui-cloud-disk/src/client/CloudDiskPage.module.css.mjs
-		const css$2 = ".AhltiW_root{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);flex-direction:column;gap:16px;padding:28px 36px;display:flex;overflow:hidden}.AhltiW_connectionRoot{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);justify-content:center;align-items:center;padding:40px;display:flex}.AhltiW_header{justify-content:space-between;align-items:flex-start;gap:16px;display:flex}.AhltiW_headerActions{gap:8px;display:flex}.AhltiW_eyebrow{color:var(--dsw-alias-label-tertiary);margin:0 0 4px;font-size:12px}h1{margin:0;font-size:24px}.AhltiW_search{gap:8px;max-width:720px;display:flex}.AhltiW_search input{flex:1;min-width:0}.AhltiW_path{min-height:24px;color:var(--dsw-alias-label-secondary);flex-wrap:wrap;align-items:center;gap:4px;display:flex}.AhltiW_path button{color:inherit;font:inherit;cursor:pointer;background:0 0;border:0;border-radius:4px;padding:2px 4px}.AhltiW_path button:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_path button[aria-current=page]{color:var(--dsw-alias-label-primary);cursor:default}.AhltiW_connectionPanel{flex-direction:column;gap:16px;width:min(100%,480px);display:flex}.AhltiW_connectionPanel h1,.AhltiW_connectionPanel p{margin:0}.AhltiW_connectionPanel label{color:var(--dsw-alias-label-secondary);flex-direction:column;gap:6px;display:flex}.AhltiW_connectionProduct{color:var(--dsw-alias-label-tertiary);font-size:14px}.AhltiW_connectionDescription{color:var(--dsw-alias-label-secondary);line-height:1.55}.AhltiW_connectionActions{flex-wrap:wrap;gap:8px;display:flex}.AhltiW_list{flex-direction:column;flex:1;gap:4px;width:100%;min-height:0;margin:0;padding:0 8px 0 0;list-style:none;display:flex;overflow:auto}.AhltiW_row{width:100%;color:inherit;text-align:left;cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:10px;align-items:center;gap:10px;padding:11px 12px;display:flex}.AhltiW_row:hover:not(:disabled){border-color:var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_row:disabled{cursor:default}.AhltiW_row span{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.AhltiW_row small{color:var(--dsw-alias-label-tertiary)}";
+		const css$2 = ".AhltiW_root{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);flex-direction:column;gap:16px;padding:28px 36px;display:flex;overflow:hidden}.AhltiW_connectionRoot{box-sizing:border-box;width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);justify-content:center;align-items:center;padding:40px;display:flex}.AhltiW_header{justify-content:space-between;align-items:flex-start;gap:16px;display:flex}.AhltiW_headerActions{gap:8px;display:flex}.AhltiW_eyebrow{color:var(--dsw-alias-label-tertiary);margin:0 0 4px;font-size:12px}h1{margin:0;font-size:24px}.AhltiW_path{min-height:24px;color:var(--dsw-alias-label-secondary);flex-wrap:wrap;align-items:center;gap:4px;display:flex}.AhltiW_path button{color:inherit;font:inherit;cursor:pointer;background:0 0;border:0;border-radius:4px;padding:2px 4px}.AhltiW_path button:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_path button[aria-current=page]{color:var(--dsw-alias-label-primary);cursor:default}.AhltiW_connectionPanel{flex-direction:column;gap:16px;width:min(100%,480px);display:flex}.AhltiW_connectionPanel h1,.AhltiW_connectionPanel p{margin:0}.AhltiW_connectionFields{flex-direction:column;gap:14px;display:flex}.AhltiW_connectionPanel label{color:var(--dsw-alias-label-secondary);flex-direction:column;gap:6px;display:flex}.AhltiW_connectionProduct{color:var(--dsw-alias-label-tertiary);font-size:14px}.AhltiW_connectionDescription{color:var(--dsw-alias-label-secondary);line-height:1.55}.AhltiW_connectionAlert{border:1px solid var(--dsw-alias-label-error);color:var(--dsw-alias-label-error);border-radius:8px;padding:10px 12px;line-height:1.5}.AhltiW_connectionActions{justify-content:flex-end;padding-top:4px;display:flex}.AhltiW_list{flex-direction:column;flex:1;gap:4px;width:100%;min-height:0;margin:0;padding:0 8px 0 0;list-style:none;display:flex;overflow:auto}.AhltiW_row{width:100%;color:inherit;text-align:left;cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:10px;align-items:center;gap:10px;padding:11px 12px;display:flex}.AhltiW_row:hover:not(:disabled){border-color:var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-layer-1)}.AhltiW_row:disabled{cursor:default}.AhltiW_row span{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.AhltiW_row small{color:var(--dsw-alias-label-tertiary)}";
 		const tagId$2 = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
@@ -96,7 +86,9 @@ window.__ModuleLoader__.load({
 		}
 		var CloudDiskPage_module_css_default = {
 			"connectionActions": "AhltiW_connectionActions",
+			"connectionAlert": "AhltiW_connectionAlert",
 			"connectionDescription": "AhltiW_connectionDescription",
+			"connectionFields": "AhltiW_connectionFields",
 			"connectionPanel": "AhltiW_connectionPanel",
 			"connectionProduct": "AhltiW_connectionProduct",
 			"connectionRoot": "AhltiW_connectionRoot",
@@ -106,8 +98,7 @@ window.__ModuleLoader__.load({
 			"list": "AhltiW_list",
 			"path": "AhltiW_path",
 			"root": "AhltiW_root",
-			"row": "AhltiW_row",
-			"search": "AhltiW_search"
+			"row": "AhltiW_row"
 		};
 		//#endregion
 		//#region lib/types/client/CloudDiskConnectionPanel.js
@@ -117,7 +108,7 @@ window.__ModuleLoader__.load({
 		* @returns Centered connection management controls.
 		*/
 		function CloudDiskConnectionPanel(props) {
-			const { t, apiKey, signingSecret, apiKeyConfigured, signingSecretConfigured, connecting, failure, onApiKeyChange, onSigningSecretChange, onConnect } = props;
+			const { t, apiKey, apiKeyConfigured, connecting, failure, onApiKeyChange, onConnect } = props;
 			return (0, react_jsx_runtime.jsxs)("section", {
 				className: CloudDiskPage_module_css_default.connectionPanel,
 				"aria-labelledby": "cloud-disk-setup-title",
@@ -134,27 +125,25 @@ window.__ModuleLoader__.load({
 						className: CloudDiskPage_module_css_default.connectionDescription,
 						children: t("setupDescription")
 					}),
-					(0, react_jsx_runtime.jsxs)("label", { children: [t("apiKey"), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
-						type: "password",
-						autoComplete: "off",
-						value: apiKey,
-						onChange: (event) => onApiKeyChange(event.target.value),
-						placeholder: apiKeyConfigured ? t("configured") : t("apiKey")
-					})] }),
-					(0, react_jsx_runtime.jsxs)("label", { children: [t("signingSecret"), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
-						type: "password",
-						autoComplete: "off",
-						value: signingSecret,
-						onChange: (event) => onSigningSecretChange(event.target.value),
-						placeholder: signingSecretConfigured ? t("configured") : t("signingSecret")
-					})] }),
+					(0, react_jsx_runtime.jsx)("div", {
+						className: CloudDiskPage_module_css_default.connectionFields,
+						children: (0, react_jsx_runtime.jsxs)("label", { children: [t("apiKey"), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
+							type: "password",
+							autoComplete: "off",
+							value: apiKey,
+							onChange: (event) => onApiKeyChange(event.target.value),
+							placeholder: apiKeyConfigured ? t("configured") : t("apiKey")
+						})] })
+					}),
 					failure !== void 0 && (0, react_jsx_runtime.jsx)("p", {
+						className: CloudDiskPage_module_css_default.connectionAlert,
 						role: "alert",
 						children: failure
 					}),
 					(0, react_jsx_runtime.jsx)("div", {
 						className: CloudDiskPage_module_css_default.connectionActions,
 						children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							variant: "primary",
 							disabled: connecting,
 							onClick: onConnect,
 							children: connecting ? t("connecting") : t("connect")
@@ -166,20 +155,16 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region lib/types/client/CloudDiskPage.js
 		const API_KEY_REF = "CLOUD_DISK_API_KEY";
-		const SIGNING_SECRET_REF = "CLOUD_DISK_SIGNING_SECRET";
 		function displayNodeName(name) {
 			const displayName = name.replace(/^\/+|\/+$/g, "");
 			return displayName === "" ? name : displayName;
 		}
-		function CloudDiskPage({ api, t }) {
+		function CloudDiskPage({ api, t, inDialog = false }) {
 			const [path, setPath] = (0, react.useState)([]);
-			const [query, setQuery] = (0, react.useState)("");
-			const [submitted, setSubmitted] = (0, react.useState)("");
 			const [cursor, setCursor] = (0, react.useState)();
 			const [state, setState] = (0, react.useState)({ status: "loading" });
 			const [user, setUser] = (0, react.useState)();
 			const [apiKey, setApiKey] = (0, react.useState)("");
-			const [signingSecret, setSigningSecret] = (0, react.useState)("");
 			const [connecting, setConnecting] = (0, react.useState)(false);
 			const [confirmDisconnect, setConfirmDisconnect] = (0, react.useState)(false);
 			const parentId = path.at(-1)?.id;
@@ -189,11 +174,8 @@ window.__ModuleLoader__.load({
 					loadingMore: true
 				});
 				else setState({ status: "loading" });
-				const response = submitted.trim() === "" ? await api.cloudDisk.list({
+				const response = await api.cloudDisk.list({
 					...parentId === void 0 ? {} : { parentId },
-					...nextCursor === void 0 ? {} : { cursor: nextCursor }
-				}) : await api.cloudDisk.search({
-					query: submitted.trim(),
 					...nextCursor === void 0 ? {} : { cursor: nextCursor }
 				});
 				if (!response.result.ok) {
@@ -225,7 +207,7 @@ window.__ModuleLoader__.load({
 				}
 				if (!response.result.value.available) {
 					setUser(void 0);
-					if (response.result.value.errorCode === "CLOUD_DISK_CREDENTIAL_MISSING" || response.result.value.errorCode === "CLOUD_DISK_SIGNING_SECRET_MISSING") {
+					if (response.result.value.errorCode === "CLOUD_DISK_CREDENTIAL_MISSING") {
 						await openSetup();
 						return;
 					}
@@ -240,12 +222,12 @@ window.__ModuleLoader__.load({
 			};
 			(0, react.useEffect)(() => {
 				initialize();
-			}, [parentId, submitted]);
+			}, [parentId]);
 			const openSetup = async () => {
 				setConfirmDisconnect(false);
 				setState({ status: "loading" });
 				try {
-					const response = await api.credentials.describe({ refs: [API_KEY_REF, SIGNING_SECRET_REF] });
+					const response = await api.credentials.describe({ refs: [API_KEY_REF] });
 					if (!response.result.ok) {
 						setState({
 							status: "error",
@@ -253,10 +235,8 @@ window.__ModuleLoader__.load({
 						});
 						return;
 					}
-					const credentials = response.result.value.credentials;
-					const apiKeyStatus = credentials[API_KEY_REF];
-					const signingSecretStatus = credentials[SIGNING_SECRET_REF];
-					if (apiKeyStatus === void 0 || signingSecretStatus === void 0) {
+					const apiKeyStatus = response.result.value.credentials[API_KEY_REF];
+					if (apiKeyStatus === void 0) {
 						setState({
 							status: "error",
 							message: t("credentialsUnavailable")
@@ -265,10 +245,7 @@ window.__ModuleLoader__.load({
 					}
 					setState({
 						status: "setup",
-						credentials: {
-							apiKey: apiKeyStatus,
-							signingSecret: signingSecretStatus
-						}
+						credentials: { apiKey: apiKeyStatus }
 					});
 				} catch {
 					setState({
@@ -280,18 +257,10 @@ window.__ModuleLoader__.load({
 			const connect = async () => {
 				if (state.status !== "setup") return;
 				const nextApiKey = apiKey.trim();
-				const nextSigningSecret = signingSecret.trim();
 				if (!state.credentials.apiKey.configured && nextApiKey.length === 0) {
 					setState({
 						...state,
 						failure: t("apiKeyRequired")
-					});
-					return;
-				}
-				if (!state.credentials.signingSecret.configured && nextSigningSecret.length === 0) {
-					setState({
-						...state,
-						failure: t("signingSecretRequired")
 					});
 					return;
 				}
@@ -310,21 +279,7 @@ window.__ModuleLoader__.load({
 							return;
 						}
 					}
-					if (nextSigningSecret.length > 0) {
-						const response = await api.credentials.set({
-							ref: SIGNING_SECRET_REF,
-							value: nextSigningSecret
-						});
-						if (!response.result.ok) {
-							setState({
-								...state,
-								failure: response.result.error.message
-							});
-							return;
-						}
-					}
 					setApiKey("");
-					setSigningSecret("");
 					await initialize();
 				} catch {
 					setState({
@@ -346,14 +301,6 @@ window.__ModuleLoader__.load({
 						});
 						return;
 					}
-					const signingSecretResponse = await api.credentials.unset({ ref: SIGNING_SECRET_REF });
-					if (!signingSecretResponse.result.ok) {
-						setState({
-							status: "error",
-							message: signingSecretResponse.result.error.message
-						});
-						return;
-					}
 					setUser(void 0);
 					setConfirmDisconnect(false);
 					await openSetup();
@@ -370,39 +317,29 @@ window.__ModuleLoader__.load({
 				setPath([]);
 				setCursor(void 0);
 			};
-			const submit = (event) => {
-				event.preventDefault();
-				resetToRoot();
-				setSubmitted(query);
-			};
 			const open = (node) => {
 				if (node.kind !== "directory") return;
 				setPath((current) => [...current, {
 					id: node.id,
 					name: displayNodeName(node.name)
 				}]);
-				setSubmitted("");
-				setQuery("");
 				setCursor(void 0);
 			};
 			const goBack = () => {
 				setPath((current) => current.slice(0, -1));
 				setCursor(void 0);
 			};
-			const unavailableMessage = state.status !== "unavailable" ? void 0 : state.errorCode === "CLOUD_DISK_PROVIDER_CONFIGURED_MISSING" || state.errorCode === "CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE" ? t("unavailableConfiguration") : state.errorCode === "CLOUD_DISK_CREDENTIAL_MISSING" || state.errorCode === "CLOUD_DISK_SIGNING_SECRET_MISSING" ? t("unavailableCredential") : state.errorCode === "CLOUD_DISK_AUTHENTICATION_FAILED" ? t("unavailableAuthentication") : state.errorCode === "CLOUD_DISK_NETWORK_FAILED" ? t("unavailableNetwork") : state.errorCode === "CLOUD_DISK_PROVIDER_AMBIGUOUS" ? t("unavailableProvider") : state.errorCode === "CLOUD_DISK_PROVIDER_FAILED" ? t("unavailableService") : t("unavailable");
+			const unavailableMessage = state.status !== "unavailable" ? void 0 : state.errorCode === "CLOUD_DISK_PROVIDER_CONFIGURED_MISSING" || state.errorCode === "CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE" ? t("unavailableConfiguration") : state.errorCode === "CLOUD_DISK_CREDENTIAL_MISSING" ? t("unavailableCredential") : state.errorCode === "CLOUD_DISK_AUTHENTICATION_FAILED" ? t("unavailableAuthentication") : state.errorCode === "CLOUD_DISK_NETWORK_FAILED" ? t("unavailableNetwork") : state.errorCode === "CLOUD_DISK_PROVIDER_AMBIGUOUS" ? t("unavailableProvider") : state.errorCode === "CLOUD_DISK_PROVIDER_FAILED" ? t("unavailableService") : t("unavailable");
 			if (state.status === "setup") return (0, react_jsx_runtime.jsx)("main", {
 				className: CloudDiskPage_module_css_default.connectionRoot,
 				"aria-label": t("title"),
 				children: (0, react_jsx_runtime.jsx)(CloudDiskConnectionPanel, {
 					t,
 					apiKey,
-					signingSecret,
 					apiKeyConfigured: state.credentials.apiKey.configured,
-					signingSecretConfigured: state.credentials.signingSecret.configured,
 					connecting,
 					...state.failure === void 0 ? {} : { failure: state.failure },
 					onApiKeyChange: setApiKey,
-					onSigningSecretChange: setSigningSecret,
 					onConnect: () => void connect()
 				})
 			});
@@ -419,7 +356,7 @@ window.__ModuleLoader__.load({
 								": ",
 								user
 							]
-						}), (0, react_jsx_runtime.jsx)("h1", { children: t("title") })] }), (0, react_jsx_runtime.jsxs)("div", {
+						}), !inDialog && (0, react_jsx_runtime.jsx)("h1", { children: t("title") })] }), (0, react_jsx_runtime.jsxs)("div", {
 							className: CloudDiskPage_module_css_default.headerActions,
 							children: [state.status === "ready" && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 								disabled: connecting,
@@ -432,37 +369,12 @@ window.__ModuleLoader__.load({
 							})]
 						})]
 					}),
-					state.status !== "unavailable" && (0, react_jsx_runtime.jsxs)("form", {
-						className: CloudDiskPage_module_css_default.search,
-						onSubmit: submit,
-						children: [
-							(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
-								"aria-label": t("search"),
-								value: query,
-								onChange: (event) => setQuery(event.target.value),
-								placeholder: t("search")
-							}),
-							(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-								type: "submit",
-								children: t("search")
-							}),
-							parentId !== void 0 && submitted === "" && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-								type: "button",
-								onClick: goBack,
-								children: t("back")
-							}),
-							submitted !== "" && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-								type: "button",
-								onClick: () => {
-									setQuery("");
-									setSubmitted("");
-									resetToRoot();
-								},
-								children: t("clearSearch")
-							})
-						]
+					parentId !== void 0 && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "outline",
+						onClick: goBack,
+						children: t("back")
 					}),
-					submitted === "" && (0, react_jsx_runtime.jsxs)("nav", {
+					(0, react_jsx_runtime.jsxs)("nav", {
 						className: CloudDiskPage_module_css_default.path,
 						"aria-label": t("path"),
 						children: [(0, react_jsx_runtime.jsx)("button", {
@@ -501,7 +413,7 @@ window.__ModuleLoader__.load({
 					state.status === "ready" && (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						(0, react_jsx_runtime.jsx)("ul", {
 							className: CloudDiskPage_module_css_default.list,
-							"aria-label": submitted === "" ? t("root") : t("search"),
+							"aria-label": t("root"),
 							children: state.page.nodes.map((node) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("button", {
 								className: CloudDiskPage_module_css_default.row,
 								onClick: () => open(node),
@@ -513,7 +425,7 @@ window.__ModuleLoader__.load({
 								]
 							}) }, node.id))
 						}),
-						state.page.nodes.length === 0 && (0, react_jsx_runtime.jsx)("p", { children: submitted === "" ? t("empty") : t("searchEmpty") }),
+						state.page.nodes.length === 0 && (0, react_jsx_runtime.jsx)("p", { children: t("empty") }),
 						state.page.nextCursor !== void 0 && (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 							disabled: state.loadingMore,
 							onClick: () => void load(state.page.nextCursor, true),
@@ -593,7 +505,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/qihoo/per-wspace/deepseek-harness-studio/packages/client/ui-cloud-disk/src/client/CloudDiskOverlay.module.css.mjs
-		const css = ".QOJ55W_root{background:var(--dsw-alias-bg-base);min-width:0;min-height:0;color:var(--dsw-alias-label-primary);position:absolute;inset:0 0 0 clamp(56px,16.5vw,360px)}.QOJ55W_root>*{min-width:0;min-height:0}@media (width<=720px){.QOJ55W_root{left:56px}}";
+		const css = ".QOJ55W_dialog{gap:0;width:min(960px,100vw - 48px);height:min(760px,100vh - 48px);min-height:0;padding:0}.QOJ55W_content{flex:1;min-height:0}.QOJ55W_content>div:last-child{flex:1;min-height:0;margin-top:0;padding:0;display:flex}.QOJ55W_content>div:last-child>main{flex:1;min-height:0}@media (width<=720px){.QOJ55W_dialog{width:calc(100vw - 24px);height:calc(100vh - 24px)}}";
 		const tagId = "@aicloud360/dsh-client-ui-cloud-disk/CloudDiskOverlay.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -602,13 +514,15 @@ window.__ModuleLoader__.load({
 			tag.textContent = css;
 			document.head.appendChild(tag);
 		}
-		var CloudDiskOverlay_module_css_default = { "root": "QOJ55W_root" };
+		var CloudDiskOverlay_module_css_default = {
+			"content": "QOJ55W_content",
+			"dialog": "QOJ55W_dialog"
+		};
 		//#endregion
 		//#region lib/types/client/CloudDiskOverlay.js
-		/** Right-side CloudDisk workspace for runtimes without first-level page slots. */
+		/** CloudDisk modal workspace for runtimes without first-level page slots. */
 		function CloudDiskOverlay({ api, t, useStore, actions, useSessions }) {
 			const open = useStore((state) => state.open);
-			const root = (0, react.useRef)(null);
 			const currentSession = useSessions((state) => state.current);
 			const openedFor = (0, react.useRef)(void 0);
 			const capturedOpeningSession = (0, react.useRef)(false);
@@ -628,15 +542,18 @@ window.__ModuleLoader__.load({
 				currentSession,
 				open
 			]);
-			(0, _deepseek_ai_dsh_client_ui_primitives.useDismissOnOutsidePointer)(root, open, actions.close);
 			if (!open) return null;
-			return (0, react_jsx_runtime.jsx)("section", {
-				ref: root,
-				className: CloudDiskOverlay_module_css_default.root,
-				"aria-label": t("title"),
+			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open: true,
+				onClose: actions.close,
+				title: t("title"),
+				closeLabel: t("cancel"),
+				className: CloudDiskOverlay_module_css_default.dialog ?? "",
+				contentClassName: CloudDiskOverlay_module_css_default.content ?? "",
 				children: (0, react_jsx_runtime.jsx)(CloudDiskPage, {
 					api,
-					t
+					t,
+					inDialog: true
 				})
 			});
 		}
@@ -646,32 +563,28 @@ window.__ModuleLoader__.load({
 		const zh = {
 			nav: "云盘",
 			title: "360 AI 云盘",
-			search: "搜索文件和目录…",
 			refresh: "刷新",
 			next: "加载更多",
 			loading: "正在读取云盘…",
 			connecting: "正在验证…",
 			empty: "此处暂无内容",
-			searchEmpty: "没有匹配结果",
 			unavailable: "云盘暂不可用",
 			unavailableConfiguration: "云盘尚未完成主机配置",
-			unavailableCredential: "云盘凭据或签名材料缺失",
+			unavailableCredential: "云盘认证信息缺失",
 			unavailableAuthentication: "云盘凭据验证失败",
 			unavailableNetwork: "无法连接云盘服务",
 			unavailableProvider: "云盘配置了多个可用服务",
 			unavailableService: "云盘服务暂时不可用",
 			credentialsUnavailable: "无法读取云盘凭据状态",
 			setupTitle: "连接 360 云盘",
-			setupDescription: "请输入您自己拥有的 API Key 和签名材料。它们仅保存在本机 Host 凭据存储中。",
+			setupDescription: "请输入您自己拥有的 API Key。签名材料由本机 Host 配置提供。",
 			apiKey: "API Key",
-			signingSecret: "签名材料",
 			apiKeyRequired: "请输入 API Key",
-			signingSecretRequired: "请输入签名材料",
 			configured: "已配置；留空则保持不变",
 			connect: "保存并验证",
 			disconnect: "断开连接",
 			disconnectTitle: "确认断开连接",
-			disconnectWarning: "断开连接会删除本机保存的 API Key 和签名材料，不会删除云盘文件、会话或 Preset。",
+			disconnectWarning: "断开连接会删除本机保存的 API Key，不会删除云盘文件、会话或 Preset。",
 			confirmDisconnect: "确认断开",
 			cancel: "取消",
 			retry: "重试",
@@ -680,39 +593,34 @@ window.__ModuleLoader__.load({
 			root: "根目录",
 			path: "当前路径",
 			back: "返回上一级",
-			clearSearch: "清除搜索",
 			user: "当前用户"
 		};
 		/** English strings for the CloudDisk client namespace. */
 		const en = {
 			nav: "Cloud Disk",
 			title: "360 AI Cloud Disk",
-			search: "Search files and folders…",
 			refresh: "Refresh",
 			next: "Load more",
 			loading: "Loading cloud disk…",
 			connecting: "Verifying…",
 			empty: "Nothing here yet",
-			searchEmpty: "No matches",
 			unavailable: "Cloud disk unavailable",
 			unavailableConfiguration: "Cloud disk Host configuration is incomplete",
-			unavailableCredential: "Cloud disk credentials or signing material are missing",
+			unavailableCredential: "Cloud disk authentication details are missing",
 			unavailableAuthentication: "Cloud disk credential verification failed",
 			unavailableNetwork: "Unable to reach the cloud disk service",
 			unavailableProvider: "Multiple cloud disk providers are configured",
 			unavailableService: "Cloud disk service is temporarily unavailable",
 			credentialsUnavailable: "Unable to read cloud disk credential status",
 			setupTitle: "Connect 360 Cloud Disk",
-			setupDescription: "Enter an API key and signing material that you own. They are stored only by the local Host credential provider.",
+			setupDescription: "Enter an API key that you own. The local Host configuration provides signing material.",
 			apiKey: "API Key",
-			signingSecret: "Signing material",
 			apiKeyRequired: "Enter an API key",
-			signingSecretRequired: "Enter signing material",
 			configured: "Configured; leave blank to keep it",
 			connect: "Save and verify",
 			disconnect: "Disconnect",
 			disconnectTitle: "Confirm disconnect",
-			disconnectWarning: "Disconnecting removes the locally stored API key and signing material. It does not delete cloud files, sessions, or presets.",
+			disconnectWarning: "Disconnecting removes the locally stored API key. It does not delete cloud files, sessions, or presets.",
 			confirmDisconnect: "Confirm disconnect",
 			cancel: "Cancel",
 			retry: "Retry",
@@ -721,7 +629,6 @@ window.__ModuleLoader__.load({
 			root: "Root",
 			path: "Current path",
 			back: "Go up",
-			clearSearch: "Clear search",
 			user: "Current user"
 		};
 		//#endregion

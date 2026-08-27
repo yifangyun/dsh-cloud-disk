@@ -3,7 +3,7 @@ import type { ConnectionHandle, IApiClient } from '@deepseek-ai/dsh-client-conne
 type CloudDiskApi = Pick<IApiClient, 'cloudDisk' | 'credentials'>;
 /**
  * Create the CloudDisk browser API from the plugin-private generic RPC channel.
- * The returned credentials methods accept only the two CloudDisk references;
+ * The returned credentials methods accept only the CloudDisk API-key reference;
  * they cannot be used to inspect or modify unrelated Host credentials.
  * @param connection - active browser-to-Host connection.
  * @returns The API subset consumed by the CloudDisk workspace.

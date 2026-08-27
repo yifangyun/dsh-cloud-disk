@@ -12,7 +12,7 @@ export const inject = ['cloudDisk', 'credentials', 'connection'];
 export const Config = z.object({
     endpoint: z.string().required(),
     apiKeyRef: z.string().required(),
-    signingSecretRef: z.string().required(),
+    signingSecret: z.string().min(1).required(),
     clientEnv: z.string().required(),
     clientSource: z.string().required(),
     subChannel: z.string().required(),
@@ -134,14 +134,9 @@ export class DirectCloudDiskProvider {
             qid: auth.qid,
             ...extra,
         };
-        return { ...input, sign: sign(input, secret.value), sub_channel: this.options.subChannel };
+        return { ...input, sign: sign(input, secret), sub_channel: this.options.subChannel };
     }
-    async signingSecret() {
-        const secret = await this.options.credentials.resolve(this.options.signingSecretRef);
-        if (secret === undefined)
-            throw signingSecretMissing();
-        return secret;
-    }
+    signingSecret() { return this.options.signingSecret; }
     getInput(params, accessToken) {
         return { method: 'GET', url: queryUrl(this.options.endpoint, params), headers: { 'access-token': accessToken } };
     }
@@ -217,7 +212,7 @@ export function applyDirectCloudDiskProvider(ctx, options) {
     return ctx.cloudDisk.registerProvider(new DirectCloudDiskProvider(options));
 }
 /**
- * Register the production fetch Provider from a profile's explicit credential references.
+ * Register the production fetch Provider from a profile's API-key reference and signing material.
  * @param ctx - Host context that owns the CloudDisk and credential services.
  * @param config - Complete direct-Provider configuration from the profile Bundle.
  */
@@ -225,7 +220,7 @@ export function apply(ctx, config) {
     applyDirectCloudDiskProvider(ctx, {
         endpoint: config.endpoint,
         credentialRef: credentialRef(config.apiKeyRef),
-        signingSecretRef: credentialRef(config.signingSecretRef),
+        signingSecret: config.signingSecret,
         clientEnv: config.clientEnv,
         clientSource: config.clientSource,
         subChannel: config.subChannel,
@@ -238,7 +233,6 @@ export function apply(ctx, config) {
 }
 function isRecord(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function credentialMissing() { return new CloudDiskError('CloudDisk credential is not configured', 'CLOUD_DISK_CREDENTIAL_MISSING'); }
-function signingSecretMissing() { return new CloudDiskError('CloudDisk signing secret is not configured', 'CLOUD_DISK_SIGNING_SECRET_MISSING'); }
 function authenticationFailed() { return new CloudDiskError('CloudDisk authentication failed', 'CLOUD_DISK_AUTHENTICATION_FAILED'); }
 function networkFailed() { return new CloudDiskError('CloudDisk network request failed', 'CLOUD_DISK_NETWORK_FAILED'); }
 function failed(message) { return new CloudDiskError(message, 'CLOUD_DISK_PROVIDER_FAILED'); }

@@ -6,8 +6,6 @@ import CloudDiskRuntime, { CloudDiskError } from "@aicloud360/dsh-cloud-disk";
 /** Private Connection RPC for the CloudDisk browser workspace. */
 const CHANNEL = "/cloud-disk";
 const API_KEY_REF = credentialRef("CLOUD_DISK_API_KEY");
-const SIGNING_SECRET_REF = credentialRef("CLOUD_DISK_SIGNING_SECRET");
-const credentialKindSchema = z.union([z.const("apiKey"), z.const("signingSecret")]);
 const listSchema = z.object({
 	parentId: z.string(),
 	cursor: z.string(),
@@ -18,26 +16,19 @@ const searchSchema = z.object({
 	cursor: z.string(),
 	limit: z.number().step(1).min(1)
 });
-const credentialSetSchema = z.object({
-	kind: credentialKindSchema.required(),
-	value: z.string().min(1).required()
-});
-const credentialUnsetSchema = z.object({ kind: credentialKindSchema.required() });
+const credentialSetSchema = z.object({ value: z.string().min(1).required() });
+const credentialUnsetSchema = z.object({});
 const CLOUD_DISK_FAILURE_CODES = new Set([
 	"CLOUD_DISK_PROVIDER_CONFIGURED_MISSING",
 	"CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE",
 	"CLOUD_DISK_PROVIDER_UNAVAILABLE",
 	"CLOUD_DISK_PROVIDER_AMBIGUOUS",
 	"CLOUD_DISK_CREDENTIAL_MISSING",
-	"CLOUD_DISK_SIGNING_SECRET_MISSING",
 	"CLOUD_DISK_AUTHENTICATION_FAILED",
 	"CLOUD_DISK_NETWORK_FAILED",
 	"CLOUD_DISK_INVALID_REQUEST",
 	"CLOUD_DISK_PROVIDER_FAILED"
 ]);
-function credentialFor(kind) {
-	return kind === "apiKey" ? API_KEY_REF : SIGNING_SECRET_REF;
-}
 function parse(schema, payload) {
 	try {
 		return schema(payload);
@@ -94,7 +85,7 @@ function pageView(page) {
 }
 /**
 * Register the CloudDisk browser RPC channel. Credential endpoints only address
-* the two CloudDisk references, so this plugin cannot become a general
+* the CloudDisk API-key reference, so this plugin cannot become a general
 * credential-inspection surface.
 * @param ctx - Host context with the selected CloudDisk provider and credentials.
 */
@@ -122,22 +113,17 @@ function installCloudDiskRpc(ctx) {
 						}
 					};
 				}
-			case "credentials/describe": {
+			case "credentials/describe":
 				if (parse(z.object({}), payload) === void 0) return badRequest("invalid cloud disk credential request");
-				const [apiKey, signingSecret] = await Promise.all([ctx.credentials.describe(API_KEY_REF), ctx.credentials.describe(SIGNING_SECRET_REF)]);
 				return {
 					ok: true,
-					value: {
-						apiKey,
-						signingSecret
-					}
+					value: { apiKey: await ctx.credentials.describe(API_KEY_REF) }
 				};
-			}
 			case "credentials/set": {
 				const parsed = parse(credentialSetSchema, payload);
 				if (parsed === void 0) return badRequest("invalid cloud disk credential request");
 				try {
-					await ctx.credentials.set(credentialFor(parsed.kind), parsed.value);
+					await ctx.credentials.set(API_KEY_REF, parsed.value);
 					return {
 						ok: true,
 						value: {}
@@ -146,11 +132,10 @@ function installCloudDiskRpc(ctx) {
 					return internalFailure("cloud disk credential could not be saved");
 				}
 			}
-			case "credentials/unset": {
-				const parsed = parse(credentialUnsetSchema, payload);
-				if (parsed === void 0) return badRequest("invalid cloud disk credential request");
+			case "credentials/unset":
+				if (parse(credentialUnsetSchema, payload) === void 0) return badRequest("invalid cloud disk credential request");
 				try {
-					await ctx.credentials.unset(credentialFor(parsed.kind));
+					await ctx.credentials.unset(API_KEY_REF);
 					return {
 						ok: true,
 						value: {}
@@ -158,7 +143,6 @@ function installCloudDiskRpc(ctx) {
 				} catch {
 					return internalFailure("cloud disk credential could not be removed");
 				}
-			}
 			case "browse/list": {
 				const parsed = parse(listSchema, payload);
 				if (parsed === void 0) return badRequest("invalid cloud disk list request");
@@ -214,7 +198,7 @@ const inject = [
 const Config = z.object({
 	endpoint: z.string().required(),
 	apiKeyRef: z.string().required(),
-	signingSecretRef: z.string().required(),
+	signingSecret: z.string().min(1).required(),
 	clientEnv: z.string().required(),
 	clientSource: z.string().required(),
 	subChannel: z.string().required(),
@@ -365,14 +349,12 @@ var DirectCloudDiskProvider = class {
 		};
 		return {
 			...input,
-			sign: sign(input, secret.value),
+			sign: sign(input, secret),
 			sub_channel: this.options.subChannel
 		};
 	}
-	async signingSecret() {
-		const secret = await this.options.credentials.resolve(this.options.signingSecretRef);
-		if (secret === void 0) throw signingSecretMissing();
-		return secret;
+	signingSecret() {
+		return this.options.signingSecret;
 	}
 	getInput(params, accessToken) {
 		return {
@@ -454,7 +436,7 @@ function applyDirectCloudDiskProvider(ctx, options) {
 	return ctx.cloudDisk.registerProvider(new DirectCloudDiskProvider(options));
 }
 /**
-* Register the production fetch Provider from a profile's explicit credential references.
+* Register the production fetch Provider from a profile's API-key reference and signing material.
 * @param ctx - Host context that owns the CloudDisk and credential services.
 * @param config - Complete direct-Provider configuration from the profile Bundle.
 */
@@ -462,7 +444,7 @@ function apply(ctx, config) {
 	applyDirectCloudDiskProvider(ctx, {
 		endpoint: config.endpoint,
 		credentialRef: credentialRef(config.apiKeyRef),
-		signingSecretRef: credentialRef(config.signingSecretRef),
+		signingSecret: config.signingSecret,
 		clientEnv: config.clientEnv,
 		clientSource: config.clientSource,
 		subChannel: config.subChannel,
@@ -478,9 +460,6 @@ function isRecord(value) {
 }
 function credentialMissing() {
 	return new CloudDiskError("CloudDisk credential is not configured", "CLOUD_DISK_CREDENTIAL_MISSING");
-}
-function signingSecretMissing() {
-	return new CloudDiskError("CloudDisk signing secret is not configured", "CLOUD_DISK_SIGNING_SECRET_MISSING");
 }
 function authenticationFailed() {
 	return new CloudDiskError("CloudDisk authentication failed", "CLOUD_DISK_AUTHENTICATION_FAILED");

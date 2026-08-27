@@ -6,7 +6,7 @@
     "cloud-disk",
     "360-cloud-disk"
   ],
-  "version": "0.1.1-rc.2",
+  "version": "0.1.1-rc.2.cloud.1",
   "engines": {
     "node": ">=22.19 <25"
   },
@@ -39,10 +39,10 @@
     }
   },
   "dependencies": {
-    "@aicloud360/dsh-cloud-disk": "0.1.1-rc.2",
-    "@aicloud360/dsh-cloud-disk-api-provider": "0.1.1-rc.2",
-    "@aicloud360/dsh-client-ui-cloud-disk": "0.1.1-rc.2",
-    "@aicloud360/dsh-tool-cloud-disk": "0.1.1-rc.2"
+    "@aicloud360/dsh-cloud-disk": "0.1.1-rc.2.cloud.1",
+    "@aicloud360/dsh-cloud-disk-api-provider": "0.1.1-rc.2.cloud.1",
+    "@aicloud360/dsh-client-ui-cloud-disk": "0.1.1-rc.2.cloud.1",
+    "@aicloud360/dsh-tool-cloud-disk": "0.1.1-rc.2.cloud.1"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-invariants": "0.1.1-rc.2",

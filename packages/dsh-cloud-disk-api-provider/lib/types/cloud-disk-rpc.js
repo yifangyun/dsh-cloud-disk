@@ -4,8 +4,6 @@ import { CloudDiskError } from '@aicloud360/dsh-cloud-disk';
 import z from '@deepseek-ai/schemastery';
 const CHANNEL = '/cloud-disk';
 const API_KEY_REF = credentialRef('CLOUD_DISK_API_KEY');
-const SIGNING_SECRET_REF = credentialRef('CLOUD_DISK_SIGNING_SECRET');
-const credentialKindSchema = z.union([z.const('apiKey'), z.const('signingSecret')]);
 const listSchema = z.object({
     parentId: z.string(),
     cursor: z.string(),
@@ -16,23 +14,19 @@ const searchSchema = z.object({
     cursor: z.string(),
     limit: z.number().step(1).min(1),
 });
-const credentialSetSchema = z.object({ kind: credentialKindSchema.required(), value: z.string().min(1).required() });
-const credentialUnsetSchema = z.object({ kind: credentialKindSchema.required() });
+const credentialSetSchema = z.object({ value: z.string().min(1).required() });
+const credentialUnsetSchema = z.object({});
 const CLOUD_DISK_FAILURE_CODES = new Set([
     'CLOUD_DISK_PROVIDER_CONFIGURED_MISSING',
     'CLOUD_DISK_PROVIDER_CONFIGURED_UNAVAILABLE',
     'CLOUD_DISK_PROVIDER_UNAVAILABLE',
     'CLOUD_DISK_PROVIDER_AMBIGUOUS',
     'CLOUD_DISK_CREDENTIAL_MISSING',
-    'CLOUD_DISK_SIGNING_SECRET_MISSING',
     'CLOUD_DISK_AUTHENTICATION_FAILED',
     'CLOUD_DISK_NETWORK_FAILED',
     'CLOUD_DISK_INVALID_REQUEST',
     'CLOUD_DISK_PROVIDER_FAILED',
 ]);
-function credentialFor(kind) {
-    return kind === 'apiKey' ? API_KEY_REF : SIGNING_SECRET_REF;
-}
 function parse(schema, payload) {
     try {
         return schema(payload);
@@ -70,7 +64,7 @@ function pageView(page) {
 }
 /**
  * Register the CloudDisk browser RPC channel. Credential endpoints only address
- * the two CloudDisk references, so this plugin cannot become a general
+ * the CloudDisk API-key reference, so this plugin cannot become a general
  * credential-inspection surface.
  * @param ctx - Host context with the selected CloudDisk provider and credentials.
  */
@@ -94,18 +88,15 @@ export function installCloudDiskRpc(ctx) {
             case 'credentials/describe': {
                 if (parse(z.object({}), payload) === undefined)
                     return badRequest('invalid cloud disk credential request');
-                const [apiKey, signingSecret] = await Promise.all([
-                    ctx.credentials.describe(API_KEY_REF),
-                    ctx.credentials.describe(SIGNING_SECRET_REF),
-                ]);
-                return { ok: true, value: { apiKey, signingSecret } };
+                const apiKey = await ctx.credentials.describe(API_KEY_REF);
+                return { ok: true, value: { apiKey } };
             }
             case 'credentials/set': {
                 const parsed = parse(credentialSetSchema, payload);
                 if (parsed === undefined)
                     return badRequest('invalid cloud disk credential request');
                 try {
-                    await ctx.credentials.set(credentialFor(parsed.kind), parsed.value);
+                    await ctx.credentials.set(API_KEY_REF, parsed.value);
                     return { ok: true, value: {} };
                 }
                 catch {
@@ -117,7 +108,7 @@ export function installCloudDiskRpc(ctx) {
                 if (parsed === undefined)
                     return badRequest('invalid cloud disk credential request');
                 try {
-                    await ctx.credentials.unset(credentialFor(parsed.kind));
+                    await ctx.credentials.unset(API_KEY_REF);
                     return { ok: true, value: {} };
                 }
                 catch {

@@ -2,13 +2,10 @@ import type { CloudDiskKey } from './locales.ts';
 interface CloudDiskConnectionPanelProps {
     readonly t: (key: CloudDiskKey) => string;
     readonly apiKey: string;
-    readonly signingSecret: string;
     readonly apiKeyConfigured: boolean;
-    readonly signingSecretConfigured: boolean;
     readonly connecting: boolean;
     readonly failure?: string;
     readonly onApiKeyChange: (value: string) => void;
-    readonly onSigningSecretChange: (value: string) => void;
     readonly onConnect: () => void;
 }
 /**

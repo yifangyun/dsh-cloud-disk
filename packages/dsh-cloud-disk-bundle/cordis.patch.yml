@@ -12,7 +12,9 @@
       config:
         endpoint: https://openapi.eyun.360.cn/intf.php
         apiKeyRef: CLOUD_DISK_API_KEY
-        signingSecretRef: CLOUD_DISK_SIGNING_SECRET
+        # Replace this marker with the 360 application signing secret before use.
+        # signingSecret: REPLACE_WITH_360_SIGNING_SECRET
+        signingSecret: e7b24b112a44fdd9ee93bdf998c6ca0e
         clientEnv: prod
         clientSource: default
         subChannel: open

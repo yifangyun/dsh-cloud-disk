@@ -1,7 +1,7 @@
 /** Direct Host-side adapter for the audited 360 CloudDisk OpenAPI. */
 import type { Context } from '@deepseek-ai/cordis';
 import z from '@deepseek-ai/schemastery';
-import { type CredentialProvider, type CredentialRef } from '@deepseek-ai/dsh-credentials';
+import { type CredentialProvider } from '@deepseek-ai/dsh-credentials';
 import CloudDiskRuntime, { type CloudDiskListRequest, type CloudDiskPage, type CloudDiskProvider, type CloudDiskProviderConfig, type CloudDiskSearchRequest, type CloudDiskUser } from '@aicloud360/dsh-cloud-disk';
 /** Cordis loader name for the direct CloudDisk Provider plugin. */
 export declare const name = "cloud-disk-api-provider";
@@ -13,8 +13,8 @@ export interface Config {
     endpoint: string;
     /** Credential reference containing the user API key. */
     apiKeyRef: string;
-    /** Credential reference containing the server-side request-signing secret. */
-    signingSecretRef: string;
+    /** Host-only application secret used to sign directory and search requests. */
+    signingSecret: string;
     /** 360 client environment identifier. */
     clientEnv: string;
     /** 360 client source identifier. */
@@ -51,7 +51,7 @@ export interface CloudDiskHttpClient {
 export declare function createFetchCloudDiskHttpClient(fetchImpl?: typeof fetch): CloudDiskHttpClient;
 /** Host-only configuration for the audited direct 360 OpenAPI Provider. */
 export interface DirectCloudDiskProviderOptions extends CloudDiskProviderConfig {
-    readonly signingSecretRef: CredentialRef;
+    readonly signingSecret: string;
     readonly clientEnv: string;
     readonly clientSource: string;
     readonly subChannel: string;
@@ -102,7 +102,7 @@ export declare class DirectCloudDiskProvider implements CloudDiskProvider {
  */
 export declare function applyDirectCloudDiskProvider(ctx: Context, options: DirectCloudDiskProviderOptions): () => void;
 /**
- * Register the production fetch Provider from a profile's explicit credential references.
+ * Register the production fetch Provider from a profile's API-key reference and signing material.
  * @param ctx - Host context that owns the CloudDisk and credential services.
  * @param config - Complete direct-Provider configuration from the profile Bundle.
  */
