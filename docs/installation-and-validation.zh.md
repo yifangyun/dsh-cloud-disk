@@ -1,19 +1,19 @@
 # CloudDisk 安装与发布验证
 
-本文适用于 `0.1.1-alpha.8`。运行机器必须有可用的 `dsh` 和 `pnpm`。
+本文适用于 `0.1.1-rc.2`。运行机器必须有可用的 `dsh` 和 `pnpm`。
 
 ## 安装
 
 选择要启用云盘的 Profile。npm 与 GitHub tag 均安装同一 Bundle；pnpm 自动解析其余四个包，无需分别安装。
 
 ```sh
-dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.8
+dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-rc.2
 ```
 
 或从 GitHub 安装同一发布：
 
 ```sh
-dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-alpha.8
+dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-rc.2
 ```
 
 安装后可检查实际装配结果，命令不会启动 Web 服务：
@@ -51,7 +51,7 @@ GIT_TEST_HOME="$(mktemp -d /tmp/dsh-cloud-disk-git-home.XXXXXX)"
 
 cd "$TEST_WORK"
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
-  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-alpha.8
+  dsh plugin --profile web add @aicloud360/dsh-cloud-disk-bundle@0.1.1-rc.2
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/npm-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/npm-cloud-disk.yml"
@@ -59,7 +59,7 @@ DSH_TELEMETRY_DISABLED=1 DSH_HOME="$NPM_TEST_HOME" \
   dsh plugin --profile web remove @aicloud360/dsh-cloud-disk-bundle
 
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
-  dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-alpha.8
+  dsh plugin --profile web add github:yifangyun/dsh-cloud-disk#v0.1.1-rc.2
 DSH_TELEMETRY_DISABLED=1 DSH_HOME="$GIT_TEST_HOME" \
   dsh --profile web --dump-config > "$TEST_WORK/git-cloud-disk.yml"
 rg "@aicloud360/dsh-(cloud-disk|cloud-disk-api-provider|client-ui-cloud-disk)" "$TEST_WORK/git-cloud-disk.yml"

@@ -5,6 +5,6 @@ interface CloudDiskOverlayInjected extends CloudDiskPageInjected {
 }
 type CloudDiskOverlayProps = PropsRuntime<'shell.overlay'> & PropsLocale<'cloudDisk'> & PropsStore<ReturnType<typeof createCloudDiskWorkspaceStore>> & InjectFace<CloudDiskOverlayInjected>;
 /** Right-side CloudDisk workspace for runtimes without first-level page slots. */
-export declare function CloudDiskOverlay({ api, t, useStore }: CloudDiskOverlayProps): import("react").JSX.Element | null;
+export declare function CloudDiskOverlay({ api, t, useStore, actions, useSessions }: CloudDiskOverlayProps): import("react").JSX.Element | null;
 export {};
 //# sourceMappingURL=CloudDiskOverlay.d.ts.map

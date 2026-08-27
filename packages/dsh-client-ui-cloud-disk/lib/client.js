@@ -606,9 +606,32 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region lib/types/client/CloudDiskOverlay.js
 		/** Right-side CloudDisk workspace for runtimes without first-level page slots. */
-		function CloudDiskOverlay({ api, t, useStore }) {
-			if (!useStore((state) => state.open)) return null;
+		function CloudDiskOverlay({ api, t, useStore, actions, useSessions }) {
+			const open = useStore((state) => state.open);
+			const root = (0, react.useRef)(null);
+			const currentSession = useSessions((state) => state.current);
+			const openedFor = (0, react.useRef)(void 0);
+			const capturedOpeningSession = (0, react.useRef)(false);
+			(0, react.useEffect)(() => {
+				if (!open) {
+					capturedOpeningSession.current = false;
+					return;
+				}
+				if (!capturedOpeningSession.current) {
+					openedFor.current = currentSession;
+					capturedOpeningSession.current = true;
+					return;
+				}
+				if (openedFor.current !== currentSession) actions.close();
+			}, [
+				actions,
+				currentSession,
+				open
+			]);
+			(0, _deepseek_ai_dsh_client_ui_primitives.useDismissOnOutsidePointer)(root, open, actions.close);
+			if (!open) return null;
 			return (0, react_jsx_runtime.jsx)("section", {
+				ref: root,
 				className: CloudDiskOverlay_module_css_default.root,
 				"aria-label": t("title"),
 				children: (0, react_jsx_runtime.jsx)(CloudDiskPage, {
