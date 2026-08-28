@@ -1,6 +1,6 @@
 # Optional CloudDisk product bundle. This inserts Host-plane capability rows;
-# selecting the shipped `cloud-disk` preset separately determines which agents
-# receive model-facing tools. Generic profiles and presets remain unchanged.
+# including the selected CloudDisk MCP tools for every built-in and user Preset.
+# The direct provider and UI remain responsible for setup and file browsing.
 - insert:
     - id: cloud-disk
       name: '@aicloud360/dsh-cloud-disk'
@@ -23,3 +23,8 @@
 
     - id: ui-cloud-disk
       name: '@aicloud360/dsh-client-ui-cloud-disk'
+
+    - id: cloud-disk-mcp
+      name: '@aicloud360/dsh-cloud-disk-bundle/mcp-host'
+      config:
+        toolCallTimeoutMs: 300000
