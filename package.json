@@ -6,7 +6,7 @@
     "cloud-disk",
     "360-cloud-disk"
   ],
-  "version": "0.1.1-rc.2.cloud.2",
+  "version": "0.1.1-rc.2.cloud.3",
   "engines": {
     "node": ">=22.19 <25"
   },
@@ -27,7 +27,8 @@
     "lib/startup.js",
     "lib/mcp-host.js",
     "cordis.patch.yml",
-    "lib/types/**/*.d.ts"
+    "lib/types/**/*.d.ts",
+    "assets/plugin-center-icon.png"
   ],
   "license": "MIT",
   "dsh": {
@@ -35,7 +36,13 @@
       "patch": "./cordis.patch.yml"
     },
     "pluginCenter": {
-      "brandColor": "#2563EB"
+      "brandColor": "#2563EB",
+      "icon": {
+        "url": "https://raw.githubusercontent.com/yifangyun/dsh-cloud-disk/v0.1.1-rc.2.cloud.3/assets/plugin-center-icon.png",
+        "alt": "CloudDisk",
+        "width": 128,
+        "height": 128
+      }
     }
   },
   "dependencies": {

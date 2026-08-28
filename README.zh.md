@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-这个可选 Profile Bundle 安装 Host 侧的 CloudDisk 服务、直连 360 API Provider、云盘工作台和本地 stdio 云盘 MCP 桥接。Desktop 插件中心和 `dsh plugin` 均安装同一个 Bundle。桥接在 Host 级注册选定的云盘工具，因此内置和用户 Preset 都可以直接调用。Provider 通过 `dsh-credentials` 按引用读取用户的 `CLOUD_DISK_API_KEY`；MCP 子进程只在启动时以 `API_KEY` 接收它。凭据缺失或删除时工具不可用；设置或替换凭据时会启动新子进程。[`cordis.patch.yml`](cordis.patch.yml) 中的 `toolCallTimeoutMs` 限制每次 MCP 调用。
+这个可选 Profile Bundle 安装 Host 侧的 CloudDisk 服务、直连 360 API Provider、云盘工作台和本地 stdio 云盘 MCP 桥接。Desktop 插件中心和 `dsh plugin` 均安装同一个 Bundle。它声明绑定版本的插件中心图标，因此发布包身份不依赖发布者头像。桥接在 Host 级注册选定的云盘工具，因此内置和用户 Preset 都可以直接调用。Provider 通过 `dsh-credentials` 按引用读取用户的 `CLOUD_DISK_API_KEY`；MCP 子进程只在启动时以 `API_KEY` 接收它。凭据缺失或删除时工具不可用；设置或替换凭据时会启动新子进程。[`cordis.patch.yml`](cordis.patch.yml) 中的 `toolCallTimeoutMs` 限制每次 MCP 调用。
 
 [`cordis.patch.yml`](cordis.patch.yml) 将应用签名材料作为字面部署值纳入源码。任何能读取 Bundle 的人都能读取它。同一文件还包含 endpoint、client 标识、超时和重试次数。首次进入时，每位用户都会被引导通过 Host 凭据存储保存 API Key；界面只读取“是否已配置”的状态，绝不读取凭据值。
 
